@@ -40,6 +40,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   }, [isVisible]);
 
+
+
   // Get current lyric
   const getCurrentLyric = (): LyricLine | null => {
     if (!song?.lyricsData?.lyrics) return null;
@@ -118,7 +120,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       <div className="chat-overlay" onClick={onToggle} />
       
       <div className="chat-interface">
-        <div className="chat-header">
+        <div className="chat-header" onClick={onToggle}>
           <h3>先生</h3>
           <button onClick={onToggle} className="chat-close-btn" aria-label="Close chat">
             ✕
@@ -221,6 +223,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           border-bottom: 1px solid #333;
           background: #252525;
           border-radius: 12px 12px 0 0;
+          cursor: pointer;
+          user-select: none;
         }
 
         .chat-header h3 {
@@ -397,15 +401,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         @media (max-width: 768px) {
           .chat-interface {
             position: fixed;
-            top: max(60px, env(safe-area-inset-top) + 40px);
+            top: 41%;
             left: 16px;
             right: 16px;
-            bottom: max(60px, env(safe-area-inset-bottom) + 40px);
+            height: 380px;
+            max-height: 60vh;
             width: auto;
-            height: auto;
-            max-height: none;
             border-radius: 16px;
-            z-index: 9999;
+            z-index: 50001;
             overflow: hidden;
             overscroll-behavior: contain;
             touch-action: pan-y;
@@ -415,20 +418,35 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             transform: none;
           }
           
+          /* Even smaller on very small screens */
+          @media (max-height: 600px) {
+            .chat-interface {
+              height: 300px;
+              max-height: 50vh;
+              top: 36%;
+              z-index: 50001;
+            }
+          }
+          
           .chat-header {
-            padding: 16px 20px;
+            padding: 12px 16px;
             border-bottom: 1px solid #333;
             flex-shrink: 0;
+          }
+          
+          .chat-header h3 {
+            font-size: 14px;
           }
           
           .chat-messages {
             flex: 1;
             overflow-y: auto;
             overscroll-behavior: contain;
+            padding: 12px;
           }
           
           .chat-input-container {
-            padding: 16px;
+            padding: 12px;
             border-top: 1px solid #333;
             flex-shrink: 0;
           }
@@ -490,25 +508,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          z-index: 9999;
+          background: rgba(0, 0, 0, 0.6);
+          z-index: 50000;
           display: none;
+          touch-action: none;
+          pointer-events: auto;
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
         }
 
         @media (max-width: 768px) {
           .chat-overlay {
             display: block;
-          }
-
-          .chat-interface {
-            position: fixed;
-            top: max(120px, env(safe-area-inset-top) + 104px);
-            left: 16px;
-            right: 16px;
-            bottom: max(24px, env(safe-area-inset-bottom) + 8px);
-            width: auto;
-            height: auto;
-            max-height: none;
           }
         }
       `}</style>
