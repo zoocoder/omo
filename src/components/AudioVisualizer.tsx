@@ -98,11 +98,6 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
       // Send frequency data to parent component
       if (onFrequencyData) {
         onFrequencyData({ lowFreq, midFreq, highFreq, overall });
-        
-        // Temporary debugging - remove this later
-        if (Math.random() < 0.01) { // Log only 1% of the time to avoid spam
-
-        }
       }
 
       animationFrameRef.current = requestAnimationFrame(analyzeAudio);

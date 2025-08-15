@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Song } from './types/lyrics';
+import { Song, LyricLine } from './types/lyrics';
 import { LyricsParser } from './utils/lyricsParser';
 import { AudioPlayer, AudioPlayerRef } from './components/AudioPlayer';
 import { LyricsDisplay } from './components/LyricsDisplay';
@@ -8,6 +8,7 @@ import { VoiceCommand } from './components/VoiceCommand';
 import { AudioVisualizer } from './components/AudioVisualizer';
 import { ChatInterface } from './components/ChatInterface';
 import { Playlist } from './components/Playlist';
+import { GrammarPopup } from './components/GrammarPopup';
 import { useLoopState } from './hooks/useLoopState';
 import { useBeatDetection } from './hooks/useBeatDetection';
 import { VoiceCommandResult } from './services/voiceCommandService';
@@ -35,16 +36,17 @@ function App() {
   // Loop state management
   const {
     loopState,
-    setMode,
-    toggleLyricSelection,
     setTimeRange,
     setRepeatCount,
+    setMode,
     startLoop,
+    startLoopWithRange,
     stopLoop,
-    incrementIteration,
     resetLoop,
-    getCalculatedTimeRange,
+    toggleLyricSelection,
     isLyricSelected,
+    incrementIteration,
+    getCalculatedTimeRange,
   } = useLoopState();
 
   // Beat detection for animations
@@ -55,6 +57,24 @@ function App() {
   // Chat interface state
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+
+  // Grammar popup state
+  const [grammarPopup, setGrammarPopup] = useState<{
+    line?: LyricLine;
+    lines?: LyricLine[];
+    explanation: string;
+    isLoading: boolean;
+    error: string | null;
+  } | null>(null);
+
+  // Individual lyric loop state - separate from main loop controls
+  const [individualLyricLoop, setIndividualLyricLoop] = useState<{
+    isActive: boolean;
+    startTime: number;
+    endTime: number;
+    repeatCount: number;
+    currentIteration: number;
+  } | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -169,28 +189,73 @@ function App() {
 
   // Handle seeking from lyrics click
   const handleSeek = useCallback((timeInMs: number) => {
+    // If there's an active loop, break it when user clicks on a different lyric
+    if (individualLyricLoop?.isActive || loopState?.isActive) {
+      // Clear the individual lyric loop if it's active
+      if (individualLyricLoop?.isActive) {
+        setIndividualLyricLoop(null);
+      }
+      
+      // Clear the global loop if it's active
+      if (loopState?.isActive) {
+        stopLoop();
+      }
+      
+      // Clear the loop region in the audio player
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.clearLoop();
+      }
+      
+      // Ensure playback continues smoothly after breaking the loop
+      if (audioPlayerRef.current && !isPlaying) {
+        audioPlayerRef.current.play();
+      }
+    }
+    
+    // Seek to the new time
     if (audioPlayerRef.current) {
       audioPlayerRef.current.seekTo(timeInMs);
     }
-  }, []);
+  }, [individualLyricLoop, loopState, stopLoop, isPlaying]);
 
   // Handle loop iteration callback from AudioPlayer
   const handleLoopIteration = useCallback(() => {
     incrementIteration();
   }, [incrementIteration]);
 
+  // Handle loop completion callback from AudioPlayer
+  const handleLoopComplete = useCallback(() => {
+    // Only clear the individual lyric loop state if it's active
+    // Don't clear the global loop state unless it was actually active
+    if (individualLyricLoop?.isActive) {
+      setIndividualLyricLoop(null);
+    }
+    
+    if (loopState?.isActive) {
+      // For selected lyrics loops, reset completely to clear visual selections
+      // For other loop types, just stop the loop
+      if (loopState.mode === 'lyrics') {
+        resetLoop();
+      } else {
+        stopLoop();
+      }
+    }
+  }, [stopLoop, resetLoop, loopState, individualLyricLoop]);
+
   // Handle starting time-based loop
   const handleStartTimeLoop = useCallback((startTime: number, endTime: number, repeatCount: number) => {
-    // Optimistically set state and kick off playback immediately
-    setTimeRange(startTime, endTime);
-    setRepeatCount(repeatCount);
+    // Set the mode and repeat count for UI state
     setMode('time');
+    setRepeatCount(repeatCount);
+    
+    // Start the loop immediately using startLoopWithRange (bypasses async mode check)
+    startLoopWithRange(startTime, endTime, duration);
+    
+    // Also set the loop region in the audio player
     if (audioPlayerRef.current) {
-      audioPlayerRef.current.setLoopRegion(startTime, endTime, repeatCount);
+      audioPlayerRef.current.setLoopRegion(startTime, endTime, repeatCount, 'time');
     }
-    // Also update internal loop state so UI reflects active loop immediately
-    startLoop(song?.lyricsData || null, duration);
-  }, [setTimeRange, setRepeatCount, setMode, startLoop, song?.lyricsData, duration]);
+  }, [setMode, setRepeatCount, startLoopWithRange, duration]);
 
   // Handle starting lyrics-based loop
   const handleStartLyricsLoop = useCallback((repeatCount: number) => {
@@ -202,26 +267,102 @@ function App() {
       audioPlayerRef.current.setLoopRegion(
         timeRange.startTime,
         timeRange.endTime,
-        repeatCount
+        repeatCount,
+        'selected-lyrics'
       );
     }
   }, [setRepeatCount, setMode, startLoop, song?.lyricsData, duration, getCalculatedTimeRange]);
 
-  // Handle stopping loop
-  const handleStopLoop = useCallback(() => {
-    stopLoop();
-    if (audioPlayerRef.current) {
-      audioPlayerRef.current.clearLoop();
-    }
-  }, [stopLoop]);
+  // Handle grammar explanation for a single lyric line
+  const handleExplainGrammar = useCallback(async (line: LyricLine) => {
+    try {
+      setGrammarPopup({
+        line,
+        explanation: '',
+        isLoading: true,
+        error: null,
+      });
 
-  // Handle resetting loop
-  const handleResetLoop = useCallback(() => {
-    resetLoop();
+      const explanation = await OpenAIService.explainJapaneseGrammar(
+        line.japanese,
+        line.romaji,
+        line.english
+      );
+      
+      setGrammarPopup(prev => prev ? {
+        ...prev,
+        explanation,
+        isLoading: false,
+      } : null);
+    } catch (error) {
+      setGrammarPopup(prev => prev ? {
+        ...prev,
+        error: error instanceof Error ? error.message : 'Failed to get explanation',
+        isLoading: false,
+      } : null);
+    }
+  }, []);
+
+  // Handle starting a loop for a single lyric line
+  const handleStartLyricLoop = useCallback((line: LyricLine, repeatCount: number) => {
+    if (!audioPlayerRef.current || line.startTime === undefined || line.endTime === undefined) return;
+    
+    // Ensure we have valid timing values
+    const startTime = Math.max(0, line.startTime);
+    const endTime = Math.max(startTime + 100, line.endTime); // Ensure minimum duration
+    
+    // Set the loop region in the audio player (lyric-based loop)
+    audioPlayerRef.current.setLoopRegion(startTime, endTime, repeatCount, 'lyric');
+    
+    // For individual lyric loops, use separate state that doesn't interfere with main loop controls
+    setIndividualLyricLoop({
+      isActive: true,
+      startTime,
+      endTime,
+      repeatCount,
+      currentIteration: 0
+    });
+    
+    // Don't use the global loop state for individual lyric loops
+    // The AudioPlayer will handle the actual looping
+    
+    // Seek to the start of the line if not already there
+    if (currentTime < startTime || currentTime > endTime) {
+      audioPlayerRef.current.seekTo(startTime);
+    }
+    
+    // Ensure playback is active
+    if (audioPlayerRef.current && !isPlaying) {
+      audioPlayerRef.current.play();
+    }
+  }, [audioPlayerRef, song?.lyricsData, duration, currentTime, isPlaying]);
+
+  const closeGrammarPopup = useCallback(() => {
+    setGrammarPopup(null);
+  }, []);
+
+  // Helper function to clear all loop states when switching songs
+  const clearAllLoopStates = useCallback(() => {
+    // Clear global loop state
+    if (loopState?.isActive) {
+      stopLoop();
+    }
+    
+    // Clear individual lyric loop state
+    if (individualLyricLoop?.isActive) {
+      setIndividualLyricLoop(null);
+    }
+    
+    // Clear audio player loop region
     if (audioPlayerRef.current) {
       audioPlayerRef.current.clearLoop();
     }
-  }, [resetLoop]);
+    
+    // Reset loop state completely to clear any selections
+    resetLoop();
+  }, [loopState, individualLyricLoop, stopLoop, resetLoop]);
+
+
 
   // Enhanced lyric selection handler that auto-enables lyrics mode
   const handleLyricSelection = useCallback((index: number, selected: boolean) => {
@@ -326,6 +467,9 @@ function App() {
 
   // Handle song selection from playlist
   const handleSongSelect = useCallback(async (songId: string) => {
+    // Clear all loop states when switching songs
+    clearAllLoopStates();
+    
     setCurrentSongId(songId);
     setAutoplayRequested(true);
     setIsPlaying(true); // Immediately set playing state to avoid button flash
@@ -335,17 +479,20 @@ function App() {
     } else {
       setIsPlaylistVisible(true);
     }
-  }, []);
+  }, [clearAllLoopStates]);
 
   // Handle autoplay when song ends
   const handleSongEnd = useCallback(() => {
     const nextSong = getNextSong(currentSongId);
     if (nextSong) {
+      // Clear all loop states when switching songs
+      clearAllLoopStates();
+      
       setCurrentSongId(nextSong.id);
       setAutoplayRequested(true);
       setIsPlaying(true); // Immediately set playing state to avoid button flash
     }
-  }, [currentSongId]);
+  }, [currentSongId, clearAllLoopStates]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -585,6 +732,7 @@ function App() {
                 onLoadedData={handleAudioLoaded}
                 onError={handleAudioError}
                 onLoopIteration={handleLoopIteration}
+                onLoopComplete={handleLoopComplete}
                 onPlayStateChange={handlePlayStateChange}
                 onAudioElementReady={handleAudioElementReady}
                 onEnded={handleSongEnd}
@@ -593,6 +741,9 @@ function App() {
                 onNext={() => {
                   const next = getNextSong(currentSongId);
                   if (next) {
+                    // Clear all loop states when switching songs
+                    clearAllLoopStates();
+                    
                     setCurrentSongId(next.id);
                     setAutoplayRequested(true);
                     setIsPlaying(true); // Immediately set playing state to avoid button flash
@@ -601,6 +752,9 @@ function App() {
                 onPrev={() => {
                   const prev = getPreviousSong(currentSongId);
                   if (prev) {
+                    // Clear all loop states when switching songs
+                    clearAllLoopStates();
+                    
                     setCurrentSongId(prev.id);
                     setAutoplayRequested(true);
                     setIsPlaying(true); // Immediately set playing state to avoid button flash
@@ -636,13 +790,12 @@ function App() {
               duration={duration}
               currentTime={currentTime}
               onTimeRangeChange={setTimeRange}
-              onRepeatCountChange={setRepeatCount}
+
               onStartTimeLoop={handleStartTimeLoop}
               onStartLyricsLoop={handleStartLyricsLoop}
-              onStopLoop={handleStopLoop}
-              onResetLoop={handleResetLoop}
               hasLyricsSelected={loopState.selectedLyricIndices.length > 0}
               calculatedTimeRange={getCalculatedTimeRange((song || previousSong)?.lyricsData || null)}
+              isMobileWeb={isMobileWeb()}
             />
             </div>
           </>
@@ -652,12 +805,15 @@ function App() {
           lyricsData={(song || previousSong)?.lyricsData || null}
           currentTime={currentTime}
           isLoading={isLoading}
-          isPlaying={isPlaying || loopState.isActive}
+          isPlaying={isPlaying || loopState.isActive || (individualLyricLoop?.isActive || false)}
           onSeek={handleSeek}
           loopState={loopState}
+          individualLyricLoop={individualLyricLoop}
           onLineSelect={handleLyricSelection}
           isLyricSelected={isLyricSelected}
           calculatedTimeRange={getCalculatedTimeRange((song || previousSong)?.lyricsData || null)}
+          onExplainGrammar={handleExplainGrammar}
+          onStartLoop={handleStartLyricLoop}
         />
 
         {/* Loop Controls (mobile placement after lyrics) */}
@@ -669,11 +825,9 @@ function App() {
               duration={duration}
               currentTime={currentTime}
               onTimeRangeChange={setTimeRange}
-              onRepeatCountChange={setRepeatCount}
+
               onStartTimeLoop={handleStartTimeLoop}
               onStartLyricsLoop={handleStartLyricsLoop}
-              onStopLoop={handleStopLoop}
-              onResetLoop={handleResetLoop}
               hasLyricsSelected={loopState.selectedLyricIndices.length > 0}
               calculatedTimeRange={getCalculatedTimeRange((song || previousSong)?.lyricsData || null)}
               isMobileWeb={isMobileWeb()}
@@ -688,6 +842,18 @@ function App() {
           isVisible={isChatVisible}
           onToggle={() => setIsChatVisible(!isChatVisible)}
         />
+
+        {/* Grammar explanation popup */}
+        {grammarPopup && (
+          <GrammarPopup
+            line={grammarPopup.line || null}
+            lines={grammarPopup.lines || null}
+            explanation={grammarPopup.explanation}
+            isLoading={grammarPopup.isLoading}
+            error={grammarPopup.error}
+            onClose={closeGrammarPopup}
+          />
+        )}
 
         </main>
       </div>

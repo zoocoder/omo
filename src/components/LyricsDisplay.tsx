@@ -2,8 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { LyricsData, LoopState, LyricLine } from '../types/lyrics';
 import { useAudioSync } from '../hooks/useAudioSync';
 import { LyricsLineComponent } from './LyricsLine';
-import { GrammarPopup } from './GrammarPopup';
-import { OpenAIService } from '../services/openaiService';
+import { LyricContextMenu } from './LyricContextMenu';
 
 interface LyricsDisplayProps {
   lyricsData: LyricsData | null;
@@ -12,9 +11,18 @@ interface LyricsDisplayProps {
   isPlaying?: boolean;
   onSeek?: (timeInMs: number) => void;
   loopState?: LoopState;
+  individualLyricLoop?: {
+    isActive: boolean;
+    startTime: number;
+    endTime: number;
+    repeatCount: number;
+    currentIteration: number;
+  } | null;
   onLineSelect?: (index: number, selected: boolean) => void;
   isLyricSelected?: (index: number) => boolean;
   calculatedTimeRange?: { startTime: number; endTime: number };
+  onExplainGrammar?: (line: LyricLine) => void;
+  onStartLoop?: (line: LyricLine, repeatCount: number) => void;
 }
 
 export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
@@ -24,15 +32,20 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
   isPlaying = false,
   onSeek,
   loopState,
+  individualLyricLoop,
   onLineSelect,
   isLyricSelected,
   calculatedTimeRange,
+  onExplainGrammar,
+  onStartLoop,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { currentLine, previousLineIndex, nextLineIndex, progress } = useAudioSync({
     lyricsData,
     currentTime,
     isPlaying,
+    loopState,
+    individualLyricLoop,
   });
 
   // Check if device is mobile web (not native app)
@@ -47,13 +60,14 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
   const [dragging, setDragging] = useState(false);
   const [inDragBuffer, setInDragBuffer] = useState(false);
 
-  // Grammar popup state
-  const [grammarPopup, setGrammarPopup] = useState<{
-    line?: LyricLine;
-    lines?: LyricLine[];
-    explanation: string;
-    isLoading: boolean;
-    error: string | null;
+
+
+
+
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState<{
+    line: LyricLine;
+    position: { x: number; y: number };
   } | null>(null);
 
   const clearDrag = useCallback(() => {
@@ -144,10 +158,20 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
     }
   }, [onLineSelect, isLyricSelected, lyricsData, isMobileWeb]);
 
-  // Handle long press for grammar explanation
-  const handleLongPress = useCallback(async (line: LyricLine) => {
-    // Don't show popup during drag operations
+  // Handle long press (500ms) to show context menu
+  const handleLongPress = useCallback((line: LyricLine, position: { x: number; y: number }) => {
+    // Don't show menu during drag operations
     if (isDraggingRef.current || dragging) return;
+
+    // Prevent lyric selection when long press is detected
+    // Clear any existing selections to avoid interference
+    if (onLineSelect) {
+      lyricsData?.lyrics.forEach((_, index) => {
+        if (isLyricSelected && isLyricSelected(index)) {
+          onLineSelect(index, false);
+        }
+      });
+    }
 
     // Check if there are selected lyrics for multi-line analysis
     const selectedIndices = lyricsData?.lyrics
@@ -157,67 +181,33 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
     const hasSelectedLyrics = selectedIndices && selectedIndices.length > 1;
 
     if (hasSelectedLyrics) {
-      // Multi-line analysis
-      const selectedLines = selectedIndices
-        .map(index => lyricsData!.lyrics[index])
-        .filter(Boolean);
-
-      setGrammarPopup({
-        lines: selectedLines,
-        explanation: '',
-        isLoading: true,
-        error: null,
-      });
-
-      try {
-        const explanation = await OpenAIService.explainJapaneseGrammar(selectedLines);
-        
-        setGrammarPopup(prev => prev ? {
-          ...prev,
-          explanation,
-          isLoading: false,
-        } : null);
-      } catch (error) {
-        setGrammarPopup(prev => prev ? {
-          ...prev,
-          error: error instanceof Error ? error.message : 'Failed to get explanation',
-          isLoading: false,
-        } : null);
+      // For multi-line selection, directly show grammar popup (existing behavior)
+      if (onExplainGrammar) {
+        onExplainGrammar(line);
       }
     } else {
-      // Single line analysis
-      setGrammarPopup({
-        line,
-        explanation: '',
-        isLoading: true,
-        error: null,
-      });
-
-      try {
-        const explanation = await OpenAIService.explainJapaneseGrammar(
-          line.japanese,
-          line.romaji,
-          line.english
-        );
-        
-        setGrammarPopup(prev => prev ? {
-          ...prev,
-          explanation,
-          isLoading: false,
-        } : null);
-      } catch (error) {
-        setGrammarPopup(prev => prev ? {
-          ...prev,
-          error: error instanceof Error ? error.message : 'Failed to get explanation',
-          isLoading: false,
-        } : null);
-      }
+      // For single line, show context menu
+      setContextMenu({ line, position });
     }
-  }, [dragging, lyricsData, isLyricSelected]);
+  }, [dragging, lyricsData, isLyricSelected, onExplainGrammar, onLineSelect]);
 
-  const closeGrammarPopup = useCallback(() => {
-    setGrammarPopup(null);
+
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu(null);
   }, []);
+
+  const handleContextMenuExplainGrammar = useCallback((line: LyricLine) => {
+    if (onExplainGrammar) {
+      onExplainGrammar(line);
+    }
+  }, [onExplainGrammar]);
+
+  const handleContextMenuStartLoop = useCallback((line: LyricLine, repeatCount: number) => {
+    if (onStartLoop) {
+      onStartLoop(line, repeatCount);
+    }
+  }, [onStartLoop]);
 
   // Auto-scroll to keep active line centered (but not during drag selection or shortly after)
   useEffect(() => {
@@ -370,15 +360,16 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
         </div>
       </div>
 
-      {/* Grammar explanation popup */}
-      {grammarPopup && (
-        <GrammarPopup
-          line={grammarPopup.line || null}
-          lines={grammarPopup.lines || null}
-          explanation={grammarPopup.explanation}
-          isLoading={grammarPopup.isLoading}
-          error={grammarPopup.error}
-          onClose={closeGrammarPopup}
+
+
+      {/* Context menu for lyric actions */}
+      {contextMenu && (
+        <LyricContextMenu
+          line={contextMenu.line}
+          position={contextMenu.position}
+          onClose={closeContextMenu}
+          onExplainGrammar={handleContextMenuExplainGrammar}
+          onStartLoop={handleContextMenuStartLoop}
         />
       )}
 

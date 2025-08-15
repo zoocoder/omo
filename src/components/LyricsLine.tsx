@@ -36,6 +36,7 @@ export const LyricsLineComponent: React.FC<LyricsLineProps> = ({
 }) => {
   const longPressTimerRef = useRef<number | null>(null);
   const longPressStartPos = useRef<{ x: number; y: number } | null>(null);
+  const hasLongPressedRef = useRef(false);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     // Store the initial position for the popup
@@ -50,9 +51,10 @@ export const LyricsLineComponent: React.FC<LyricsLineProps> = ({
     if (onLongPress) {
       longPressTimerRef.current = window.setTimeout(() => {
         if (longPressStartPos.current) {
+          hasLongPressedRef.current = true;
           onLongPress(line, longPressStartPos.current);
         }
-      }, 800); // 800ms for long press
+      }, 500); // 500ms for long press (standard)
     }
   }, [onPointerDownLine, onLongPress, index, isSelected, line]);
 
@@ -63,6 +65,21 @@ export const LyricsLineComponent: React.FC<LyricsLineProps> = ({
       longPressTimerRef.current = null;
     }
     longPressStartPos.current = null;
+    
+    // Reset long press flag after a short delay to allow for click handling
+    setTimeout(() => {
+      hasLongPressedRef.current = false;
+    }, 100);
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    // Clear long press timer and reset flag when pointer leaves
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    longPressStartPos.current = null;
+    hasLongPressedRef.current = false;
   }, []);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
@@ -81,6 +98,7 @@ export const LyricsLineComponent: React.FC<LyricsLineProps> = ({
       if (distance > 10) { // More than 10px movement cancels long press
         clearTimeout(longPressTimerRef.current);
         longPressTimerRef.current = null;
+        hasLongPressedRef.current = false;
       }
     }
   }, [onPointerEnterLine, index]);
@@ -100,6 +118,11 @@ export const LyricsLineComponent: React.FC<LyricsLineProps> = ({
   };
 
   const handleClick = () => {
+    // Prevent click if a long press was detected
+    if (hasLongPressedRef.current) {
+      return;
+    }
+    
     // Handle regular seek click (main content area)
     if (onLineClick && line.startTime !== undefined) {
       onLineClick(line.startTime);
@@ -125,7 +148,7 @@ export const LyricsLineComponent: React.FC<LyricsLineProps> = ({
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerUp}
+      onPointerLeave={handlePointerLeave}
       style={{ cursor: getCursorStyle() }}
     >
       {/* Selection indicator (minimal visual feedback only) */}

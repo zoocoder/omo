@@ -10,6 +10,7 @@ interface AudioPlayerProps {
   onLoadedData: () => void;
   onError: (error: string) => void;
   onLoopIteration?: () => void;
+  onLoopComplete?: () => void;
   onPlayStateChange?: (isPlaying: boolean) => void;
   onAudioElementReady?: (audioElement: HTMLAudioElement) => void;
   onEnded?: () => void;
@@ -21,7 +22,7 @@ interface AudioPlayerProps {
 
 export interface AudioPlayerRef {
   seekTo: (timeInMs: number) => void;
-  setLoopRegion: (startTime: number, endTime: number, repeatCount: number) => void;
+  setLoopRegion: (startTime: number, endTime: number, repeatCount: number, type: 'lyric' | 'time' | 'selected-lyrics') => void;
   clearLoop: () => void;
   getLoopState: () => LoopState | null;
   togglePlayPause: () => void;
@@ -40,6 +41,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
   onLoadedData,
   onError,
   onLoopIteration,
+  onLoopComplete,
   onPlayStateChange,
   onAudioElementReady,
   onEnded,
@@ -70,6 +72,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
     repeatCount: number;
     currentIteration: number;
     isActive: boolean;
+    type: 'lyric' | 'time' | 'selected-lyrics'; // Distinguish between different loop types
   } | null>(null);
 
 
@@ -85,46 +88,118 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
   const checkLoopBoundary = useCallback((time: number) => {
     if (!loopRegion || !loopRegion.isActive) return;
     
-    if (time >= loopRegion.endTime) {
-
-      
-      // Check if we should continue looping (currentIteration + 1 because we increment after this check)
+    // Use a small buffer to ensure we catch the end time
+    if (time >= loopRegion.endTime - 50) { // 50ms buffer
+      // Check if we should continue looping
       const shouldContinue = loopRegion.repeatCount === 0 || 
-                             loopRegion.currentIteration + 1 < loopRegion.repeatCount;
-      
-
+                             loopRegion.currentIteration < loopRegion.repeatCount;
       
       if (shouldContinue) {
-        // Continue loop - seek back to start
+        // Continue loop - increment iteration after checking
         const newIteration = loopRegion.currentIteration + 1;
-
-        setLoopRegion(prev => prev ? { ...prev, currentIteration: newIteration } : null);
         
-        if (isDemoMode) {
-          setCurrentTime(loopRegion.startTime);
-          onTimeUpdate(loopRegion.startTime);
-        } else if (audioRef.current) {
-          audioRef.current.currentTime = loopRegion.startTime / 1000;
-          // Immediately update the time to ensure continuity
-          const newTime = loopRegion.startTime;
-          setCurrentTime(newTime);
-          onTimeUpdate(newTime);
-        }
-        
-        if (onLoopIteration) {
-          onLoopIteration();
+        // Only apply 1-second pause for individual lyric loops (not selected-lyrics loops)
+        if (loopRegion.type === 'lyric') {
+          // Pause playback during the 1-second delay for lyric loops
+          if (audioRef.current && !isDemoMode) {
+            audioRef.current.pause();
+            // Update internal state to reflect pause
+            setIsPlaying(false);
+            updateMediaSessionPlaybackState();
+            onPlayStateChange?.(false);
+          }
+          
+          setLoopRegion(prev => {
+            if (!prev) {
+              console.error('Loop region was null when trying to update iteration');
+              return null;
+            }
+            return { ...prev, currentIteration: newIteration };
+          });
+          
+          // Add 1 second delay before restarting the loop
+          setTimeout(() => {
+            // Check if loop is still active before resuming
+            if (!loopRegion || !loopRegion.isActive) {
+              return;
+            }
+            
+            if (isDemoMode) {
+              setCurrentTime(loopRegion.startTime);
+              onTimeUpdate(loopRegion.startTime);
+            } else if (audioRef.current) {
+              audioRef.current.currentTime = loopRegion.startTime / 1000;
+              // Immediately update the time to ensure continuity
+              const newTime = loopRegion.startTime;
+              setCurrentTime(newTime);
+              onTimeUpdate(newTime);
+              
+              // Resume playback after the delay
+              audioRef.current.play().then(() => {
+                // Update internal state to reflect play
+                setIsPlaying(true);
+                updateMediaSessionPlaybackState();
+                onPlayStateChange?.(true);
+              }).catch((error) => {
+                console.error('Error resuming loop playback:', error);
+              });
+            }
+            
+            if (onLoopIteration) {
+              onLoopIteration();
+            }
+          }, 1000); // 1 second delay
+        } else {
+          // For time-based loops and selected-lyrics loops, immediately restart without pause
+          setLoopRegion(prev => {
+            if (!prev) {
+              console.error('Loop region was null when trying to update iteration');
+              return null;
+            }
+            return { ...prev, currentIteration: newIteration };
+          });
+          
+          // Immediately seek to start and continue playing
+          if (isDemoMode) {
+            setCurrentTime(loopRegion.startTime);
+            onTimeUpdate(loopRegion.startTime);
+          } else if (audioRef.current) {
+            audioRef.current.currentTime = loopRegion.startTime / 1000;
+            const newTime = loopRegion.startTime;
+            setCurrentTime(newTime);
+            onTimeUpdate(newTime);
+            
+            // Continue playing immediately
+            if (!isPlaying) {
+              audioRef.current.play().then(() => {
+                setIsPlaying(true);
+                updateMediaSessionPlaybackState();
+                onPlayStateChange?.(true);
+              }).catch((error) => {
+                console.error('Error continuing loop playback:', error);
+              });
+            }
+          }
+          
+          if (onLoopIteration) {
+            onLoopIteration();
+          }
         }
       } else {
         // Loop complete - stop looping
-
         setLoopRegion(prev => prev ? { ...prev, isActive: false } : null);
         if (isPlaying) {
           setIsPlaying(false);
           updateMediaSessionPlaybackState();
         }
+        
+        // Notify App component that loop has completed
+        if (onLoopComplete) {
+          onLoopComplete();
+        }
       }
     }
-  }, [loopRegion, isDemoMode, onTimeUpdate, onLoopIteration]);
+  }, [loopRegion, isDemoMode, onTimeUpdate, onLoopIteration, isPlaying, updateMediaSessionPlaybackState]);
 
   // Handle time updates
   const handleTimeUpdate = useCallback(() => {
@@ -489,13 +564,14 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
   }, [isDemoMode, duration, onTimeUpdate, isPlaying, startDemoTimer, startAudioUpdateTimer, onError]);
 
   // Loop management functions
-  const setLoopRegionHandler = useCallback((startTime: number, endTime: number, repeatCount: number) => {
+  const setLoopRegionHandler = useCallback((startTime: number, endTime: number, repeatCount: number, type: 'lyric' | 'time' | 'selected-lyrics' = 'lyric') => {
     setLoopRegion({
       startTime,
       endTime,
       repeatCount,
       currentIteration: 0,
       isActive: true,
+      type,
     });
     
     // Automatically seek to loop start and start playing
@@ -540,7 +616,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
 
   const startTemporaryLoop = useCallback((startTime: number, endTime: number, repeatCount: number) => {
     // Start a temporary loop (like for voice commands) - same as setLoopRegion but more explicit
-    setLoopRegionHandler(startTime, endTime, repeatCount);
+    setLoopRegionHandler(startTime, endTime, repeatCount, 'time'); // Temporary loops are time-based
   }, [setLoopRegionHandler]);
 
   // Allow parent to indicate we should autoplay once the next source loads

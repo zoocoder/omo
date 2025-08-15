@@ -7,11 +7,8 @@ interface LoopControlsProps {
   duration: number;
   currentTime: number;
   onTimeRangeChange: (startTime: number, endTime: number) => void;
-  onRepeatCountChange: (count: number) => void;
   onStartTimeLoop: (startTime: number, endTime: number, repeatCount: number) => void;
   onStartLyricsLoop: (repeatCount: number) => void;
-  onStopLoop: () => void;
-  onResetLoop: () => void;
   hasLyricsSelected: boolean;
   calculatedTimeRange: { startTime: number; endTime: number };
   isMobileWeb?: boolean;
@@ -23,25 +20,28 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
   duration,
   currentTime,
   onTimeRangeChange,
-  onRepeatCountChange,
   onStartTimeLoop,
   onStartLyricsLoop,
-  onStopLoop,
-  onResetLoop,
   hasLyricsSelected,
   calculatedTimeRange,
   isMobileWeb = false,
 }) => {
   const [timeLoopStart, setTimeLoopStart] = useState(0);
   const [timeLoopEnd, setTimeLoopEnd] = useState(Math.min(30000, duration)); // Default 30 seconds
-  const [repeatCount, setRepeatCount] = useState(3);
+  const [timeRepeatCount, setTimeRepeatCount] = useState(3);
+  const [lyricsRepeatCount, setLyricsRepeatCount] = useState(3);
   const [isDragging, setIsDragging] = useState<'start' | 'end' | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
-  // Update repeat count when external state changes
+  // Update repeat counts when external state changes
   useEffect(() => {
-    setRepeatCount(loopState.repeatCount ?? 3);
-  }, [loopState.repeatCount]);
+    // Only update the relevant repeat count based on the active loop mode
+    if (loopState.mode === 'time') {
+      setTimeRepeatCount(loopState.repeatCount ?? 3);
+    } else if (loopState.mode === 'lyrics') {
+      setLyricsRepeatCount(loopState.repeatCount ?? 3);
+    }
+  }, [loopState.repeatCount, loopState.mode]);
 
   // Update time range when duration changes
   useEffect(() => {
@@ -162,28 +162,46 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
     }
   }, [timeLoopStart, timeLoopEnd, onTimeRangeChange]);
 
-  const incrementRepeatCount = () => {
-    const newCount = repeatCount === 0 ? 1 : Math.min(repeatCount + 1, 999);
-    onRepeatCountChange(newCount);
+  // Time loop handlers
+  const incrementTimeRepeatCount = () => {
+    const newCount = timeRepeatCount === 0 ? 1 : Math.min(timeRepeatCount + 1, 999);
+    setTimeRepeatCount(newCount);
   };
 
-  const decrementRepeatCount = () => {
-    const newCount = Math.max(repeatCount - 1, 1);
-    onRepeatCountChange(newCount);
+  const decrementTimeRepeatCount = () => {
+    const newCount = Math.max(timeRepeatCount - 1, 1);
+    setTimeRepeatCount(newCount);
   };
 
-  const setInfiniteLoop = () => {
+  const setTimeInfiniteLoop = () => {
     // Toggle: if currently infinity (0), go to 1; otherwise go to infinity (0)
-    const newCount = repeatCount === 0 ? 1 : 0;
-    onRepeatCountChange(newCount);
+    const newCount = timeRepeatCount === 0 ? 1 : 0;
+    setTimeRepeatCount(newCount);
+  };
+
+  // Lyrics loop handlers
+  const incrementLyricsRepeatCount = () => {
+    const newCount = lyricsRepeatCount === 0 ? 1 : Math.min(lyricsRepeatCount + 1, 999);
+    setLyricsRepeatCount(newCount);
+  };
+
+  const decrementLyricsRepeatCount = () => {
+    const newCount = Math.max(lyricsRepeatCount - 1, 1);
+    setLyricsRepeatCount(newCount);
+  };
+
+  const setLyricsInfiniteLoop = () => {
+    // Toggle: if currently infinity (0), go to 1; otherwise go to infinity (0)
+    const newCount = lyricsRepeatCount === 0 ? 1 : 0;
+    setLyricsRepeatCount(newCount);
   };
 
   const handleStartTimeLoop = () => {
-    onStartTimeLoop(timeLoopStart, timeLoopEnd, repeatCount);
+    onStartTimeLoop(timeLoopStart, timeLoopEnd, timeRepeatCount);
   };
 
   const handleStartLyricsLoop = () => {
-    onStartLyricsLoop(repeatCount);
+    onStartLyricsLoop(lyricsRepeatCount);
   };
 
   const getProgressText = (): string => {
@@ -192,7 +210,10 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
     if (loopState.repeatCount === 0) {
       return `Loop ${loopState.currentIteration + 1} (∞)`;
     } else {
-      return `Loop ${loopState.currentIteration + 1}/${loopState.repeatCount}`;
+      // Show current iteration out of total plays (repeatCount + 1)
+      // e.g., "1x repeat" = 2 total plays, so "Loop 1 of 2", "Loop 2 of 2"
+      const totalPlays = loopState.repeatCount + 1;
+      return `Loop ${loopState.currentIteration + 1} of ${totalPlays}`;
     }
   };
 
@@ -256,12 +277,12 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
 
           <div className="timeline-controls">
             <div className="repeat-counter">
-              <button onClick={decrementRepeatCount} className="counter-btn">−</button>
+              <button onClick={decrementTimeRepeatCount} className="counter-btn">−</button>
               <span className="counter-display">
-                {repeatCount === 0 ? '∞' : `${repeatCount}x`}
+                {timeRepeatCount === 0 ? '∞' : `${timeRepeatCount}x`}
               </span>
-              <button onClick={incrementRepeatCount} className="counter-btn">+</button>
-              <button onClick={setInfiniteLoop} className={`infinite-toggle ${repeatCount === 0 ? 'active' : ''}`}>
+              <button onClick={incrementTimeRepeatCount} className="counter-btn">+</button>
+              <button onClick={setTimeInfiniteLoop} className={`infinite-toggle ${timeRepeatCount === 0 ? 'active' : ''}`}>
                 ∞
               </button>
             </div>
@@ -278,18 +299,18 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
             {!hasLyricsSelected && (
               <p className="no-selection-text">Drag across lyric cards to select a range for looping</p>
             )}
-            <div className="lyrics-loop-info">
-              {hasLyricsSelected && (
-                <>
-                  <p>Range: {formatTime(calculatedTimeRange.startTime)} - {formatTime(calculatedTimeRange.endTime)}</p>
+            {hasLyricsSelected && (
+              <div className="lyrics-loop-info">
+                <p>Range: {formatTime(calculatedTimeRange.startTime)} - {formatTime(calculatedTimeRange.endTime)}</p>
+                {!loopState.isActive && (
                   <div className="lyrics-controls">
                     <div className="repeat-counter">
-                      <button onClick={decrementRepeatCount} className="counter-btn">−</button>
+                      <button onClick={decrementLyricsRepeatCount} className="counter-btn">−</button>
                       <span className="counter-display">
-                        {repeatCount === 0 ? '∞' : `${repeatCount}x`}
+                        {lyricsRepeatCount === 0 ? '∞' : `${lyricsRepeatCount}x`}
                       </span>
-                      <button onClick={incrementRepeatCount} className="counter-btn">+</button>
-                      <button onClick={setInfiniteLoop} className={`infinite-toggle ${repeatCount === 0 ? 'active' : ''}`}>
+                      <button onClick={incrementLyricsRepeatCount} className="counter-btn">+</button>
+                      <button onClick={setLyricsInfiniteLoop} className={`infinite-toggle ${lyricsRepeatCount === 0 ? 'active' : ''}`}>
                         ∞
                       </button>
                     </div>
@@ -297,24 +318,15 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
                       Play Loop
                     </button>
                   </div>
-                </>
-              )}
-            </div>
+                )}
+                {loopState.isActive && (
+                  <p className="loop-active-text">Loop is playing - click any lyric card to cancel</p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      {/* Active Loop Controls */}
-      {loopState.isActive && (
-        <div className="active-loop-controls">
-          <button onClick={onStopLoop} className="stop-loop-btn">
-            Stop Loop
-          </button>
-          <button onClick={onResetLoop} className="reset-loop-btn">
-            Reset
-          </button>
-        </div>
-      )}
 
       <style jsx>{`
         .loop-controls {
@@ -609,43 +621,11 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
           font-size: 13px;
         }
 
-        .active-loop-controls {
-          display: flex;
-          gap: 12px;
-          padding-top: 16px;
-          border-top: 1px solid #404040;
-        }
-
-        .stop-loop-btn, .reset-loop-btn {
-          flex: 1;
-          padding: 12px 20px;
-          border: none;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .stop-loop-btn {
-          background: #ff4757;
-          color: #ffffff;
-        }
-
-        .stop-loop-btn:hover {
-          background: #ff3844;
-          transform: translateY(-1px);
-        }
-
-        .reset-loop-btn {
-          background: #404040;
-          color: #b3b3b3;
-        }
-
-        .reset-loop-btn:hover {
-          background: #535353;
-          color: #ffffff;
-          transform: translateY(-1px);
+        .loop-active-text {
+          color: #999999;
+          font-style: italic;
+          margin-top: 12px;
+          text-align: center;
         }
 
         /* Mobile responsive */
@@ -667,10 +647,6 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
           .repeat-counter {
             justify-content: center;
             margin-bottom: 8px;
-          }
-
-          .active-loop-controls {
-            flex-direction: column;
           }
         }
       `}</style>
