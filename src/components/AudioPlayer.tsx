@@ -570,36 +570,71 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
     }
   }, []);
 
-  // Handle speed change with audio quality optimizations
+  // Detect if we're on mobile
+  const isMobile = useCallback(() => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (window.innerWidth <= 768 && 'ontouchstart' in window);
+  }, []);
+
+  // Handle speed change with mobile-optimized audio quality improvements
   const handleSpeedChange = useCallback((newSpeed: number) => {
     setPlaybackRate(newSpeed);
     if (audioRef.current && !isDemoMode) {
-      // Apply playback rate
-      audioRef.current.playbackRate = newSpeed;
+      const mobile = isMobile();
       
-      // For slow speeds, ensure audio is properly buffered
+      // For slow speeds, use different strategies for mobile vs desktop
       if (newSpeed < 0.8) {
-        // Force buffer reload to reduce artifacts at slow speeds
         const currentTime = audioRef.current.currentTime;
         const wasPlaying = !audioRef.current.paused;
         
-        // Brief pause and resume to refresh buffer
-        audioRef.current.pause();
-        setTimeout(() => {
-          if (audioRef.current) {
-            audioRef.current.currentTime = currentTime;
-            audioRef.current.playbackRate = newSpeed;
-            if (wasPlaying) {
-              audioRef.current.play().catch(() => {
-                // Ignore play errors
-              });
+        if (mobile) {
+          // Mobile-specific optimization: more aggressive buffer management
+          audioRef.current.pause();
+          
+          // Longer delay for mobile to properly clear buffer
+          setTimeout(() => {
+            if (audioRef.current) {
+              // Force load event to refresh mobile audio pipeline
+              const currentSrc = audioRef.current.src;
+              audioRef.current.load();
+              audioRef.current.src = currentSrc;
+              audioRef.current.currentTime = currentTime;
+              audioRef.current.playbackRate = newSpeed;
+              
+              if (wasPlaying) {
+                // Mobile needs user gesture context, so wrap in timeout
+                setTimeout(() => {
+                  if (audioRef.current) {
+                    audioRef.current.play().catch(() => {
+                      console.warn('Mobile autoplay blocked after speed change');
+                    });
+                  }
+                }, 100);
+              }
             }
-          }
-        }, 50);
+          }, 150); // Longer delay for mobile
+        } else {
+          // Desktop optimization: quick buffer refresh
+          audioRef.current.pause();
+          setTimeout(() => {
+            if (audioRef.current) {
+              audioRef.current.currentTime = currentTime;
+              audioRef.current.playbackRate = newSpeed;
+              if (wasPlaying) {
+                audioRef.current.play().catch(() => {
+                  // Ignore play errors
+                });
+              }
+            }
+          }, 50);
+        }
+      } else {
+        // For normal speeds, just apply directly
+        audioRef.current.playbackRate = newSpeed;
       }
     }
     setShowSpeedMenu(false);
-  }, [isDemoMode]);
+  }, [isDemoMode, isMobile]);
 
   // Speed menu position calculation
   const [speedMenuPosition, setSpeedMenuPosition] = useState({ top: 0, left: 0 });
@@ -831,6 +866,8 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           preload="auto"
           crossOrigin="anonymous"
           playsInline
+          webkit-playsinline="true"
+          x5-playsinline="true"
           onLoadedMetadata={handleLoadedMetadata}
           onTimeUpdate={handleTimeUpdate}
           onError={handleError}
