@@ -1172,7 +1172,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           .mobile-spotify-layout { 
             display: flex; 
             flex-direction: column; 
-            gap: 12px;
+            gap: 8px;
             width: 100%;
             height: 100%;
             justify-content: space-between;
@@ -1282,8 +1282,8 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             border: none;
             color: #ffffff;
             cursor: pointer;
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
