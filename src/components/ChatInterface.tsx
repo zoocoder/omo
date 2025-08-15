@@ -113,13 +113,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   }
 
   return (
-    <div className="chat-interface">
-      <div className="chat-header">
-        <h3>先生</h3>
-        <button onClick={onToggle} className="chat-close-btn" aria-label="Close chat">
-          ✕
-        </button>
-      </div>
+    <>
+      {/* Overlay for click-outside-to-close on mobile */}
+      <div className="chat-overlay" onClick={onToggle} />
+      
+      <div className="chat-interface">
+        <div className="chat-header">
+          <h3>先生</h3>
+          <button onClick={onToggle} className="chat-close-btn" aria-label="Close chat">
+            ✕
+          </button>
+        </div>
       
       <div className="chat-messages">
         {messages.length === 0 && (
@@ -479,7 +483,25 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             display: none;
           }
         }
+
+        .chat-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 9999;
+          display: none;
+        }
+
+        @media (max-width: 768px) {
+          .chat-overlay {
+            display: block;
+          }
+        }
       `}</style>
     </div>
+    </>
   );
 };
