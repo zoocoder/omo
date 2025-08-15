@@ -16,12 +16,14 @@ import { getNextSong, getPreviousSong } from './data/songs';
 
 function App() {
   const [song, setSong] = useState<Song | null>(null);
+  const [previousSong, setPreviousSong] = useState<Song | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const audioPlayerRef = useRef<AudioPlayerRef>(null);
+  const songRef = useRef<Song | null>(null);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [autoplayRequested, setAutoplayRequested] = useState(false);
 
@@ -99,6 +101,11 @@ function App() {
   const [isPlaylistVisible, setIsPlaylistVisible] = useState(window.innerWidth > 768);
   const [currentSongId, setCurrentSongId] = useState<string>('vaundy-001');
 
+  // Keep songRef in sync with song state
+  useEffect(() => {
+    songRef.current = song;
+  }, [song]);
+
   // Load song when currentSongId changes
   useEffect(() => {
     const loadSong = async () => {
@@ -106,11 +113,16 @@ function App() {
         setIsLoading(true);
         setError(null);
         const loadedSong = await LyricsParser.loadSong(currentSongId);
+        // Keep current song as previous for smooth transitions
+        if (songRef.current) {
+          setPreviousSong(songRef.current);
+        }
         setSong(loadedSong);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load song';
         setError(errorMessage);
         console.error('Error loading song:', err);
+        // Keep previous song visible on error to prevent layout flash
       } finally {
         setIsLoading(false);
       }
@@ -532,13 +544,13 @@ function App() {
 
 
 
-        {song && (
+        {(song || previousSong) && (
           <>
             <div className="player-controls">
               <AudioPlayer
                 ref={audioPlayerRef}
-                audioUrl={song.audioUrl}
-                coverUrl={song.coverUrl}
+                audioUrl={(song || previousSong)!.audioUrl}
+                coverUrl={(song || previousSong)!.coverUrl}
                 onTimeUpdate={handleTimeUpdate}
                 onDurationChange={handleDurationChange}
                 onLoadedData={handleAudioLoaded}
@@ -547,8 +559,8 @@ function App() {
                 onPlayStateChange={handlePlayStateChange}
                 onAudioElementReady={handleAudioElementReady}
                 onEnded={handleSongEnd}
-                songTitle={song.lyricsData.metadata.title}
-                artist={song.lyricsData.metadata.artist}
+                songTitle={(song || previousSong)!.lyricsData.metadata.title}
+                artist={(song || previousSong)!.lyricsData.metadata.artist}
                 onNext={() => {
                   const next = getNextSong(currentSongId);
                   if (next) {
@@ -591,7 +603,7 @@ function App() {
             <div className="loop-controls-desktop">
             <LoopControls
               loopState={loopState}
-              lyricsData={song?.lyricsData || null}
+              lyricsData={(song || previousSong)?.lyricsData || null}
               duration={duration}
               currentTime={currentTime}
               onTimeRangeChange={setTimeRange}
@@ -601,14 +613,14 @@ function App() {
               onStopLoop={handleStopLoop}
               onResetLoop={handleResetLoop}
               hasLyricsSelected={loopState.selectedLyricIndices.length > 0}
-              calculatedTimeRange={getCalculatedTimeRange(song?.lyricsData || null)}
+              calculatedTimeRange={getCalculatedTimeRange((song || previousSong)?.lyricsData || null)}
             />
             </div>
           </>
         )}
 
         <LyricsDisplay
-          lyricsData={song?.lyricsData || null}
+          lyricsData={(song || previousSong)?.lyricsData || null}
           currentTime={currentTime}
           isLoading={isLoading}
           isPlaying={isPlaying || loopState.isActive}
@@ -616,15 +628,15 @@ function App() {
           loopState={loopState}
           onLineSelect={handleLyricSelection}
           isLyricSelected={isLyricSelected}
-          calculatedTimeRange={getCalculatedTimeRange(song?.lyricsData || null)}
+          calculatedTimeRange={getCalculatedTimeRange((song || previousSong)?.lyricsData || null)}
         />
 
         {/* Loop Controls (mobile placement after lyrics) */}
-        {song && (
+        {(song || previousSong) && (
           <div className="loop-controls-mobile">
             <LoopControls
               loopState={loopState}
-              lyricsData={song?.lyricsData || null}
+              lyricsData={(song || previousSong)?.lyricsData || null}
               duration={duration}
               currentTime={currentTime}
               onTimeRangeChange={setTimeRange}
@@ -634,7 +646,7 @@ function App() {
               onStopLoop={handleStopLoop}
               onResetLoop={handleResetLoop}
               hasLyricsSelected={loopState.selectedLyricIndices.length > 0}
-              calculatedTimeRange={getCalculatedTimeRange(song?.lyricsData || null)}
+              calculatedTimeRange={getCalculatedTimeRange((song || previousSong)?.lyricsData || null)}
               isMobileWeb={isMobileWeb()}
             />
           </div>
@@ -1319,6 +1331,11 @@ function App() {
           .app-main {
             padding: 24px 16px max(100px, env(safe-area-inset-bottom) + 64px);
             margin-top: max(88px, env(safe-area-inset-top) + 72px);
+            min-height: calc(100vh - max(88px, env(safe-area-inset-top) + 72px) - max(100px, env(safe-area-inset-bottom) + 64px));
+          }
+
+          .player-controls {
+            min-height: 200px; /* Stable height during transitions */
           }
         }
 
