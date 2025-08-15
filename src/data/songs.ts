@@ -39,6 +39,14 @@ export const SONGS: SongInfo[] = [
     titleEnglish: 'Rain',
     artist: 'Motohiro Hata',
     duration: 300000
+  },
+  {
+    id: 'creepy-nuts-001',
+    title: 'Bling-Bang-Bang-Born',
+    titleRomaji: 'Bling-Bang-Bang-Born',
+    titleEnglish: 'Bling-Bang-Bang-Born',
+    artist: 'Creepy Nuts',
+    duration: 180000
   }
 ];
 
