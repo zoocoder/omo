@@ -40,6 +40,59 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   }, [isVisible]);
 
+  // Completely isolate background - freeze it in place when chat is visible
+  useEffect(() => {
+    if (!isVisible || window.innerWidth > 768) return;
+
+    // Get current state
+    const body = document.body;
+    const html = document.documentElement;
+    const app = document.querySelector('.app') as HTMLElement;
+    
+    // Store current scroll position
+    const scrollY = window.pageYOffset || html.scrollTop || body.scrollTop || 0;
+    
+    // Store original styles
+    const originalBodyStyle = body.style.cssText;
+    const originalHtmlStyle = html.style.cssText;
+    const originalAppStyle = app?.style.cssText || '';
+    
+    // Freeze everything in place
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.overflow = 'hidden';
+    body.style.height = '100%';
+    
+    html.style.overflow = 'hidden';
+    html.style.height = '100%';
+    
+    if (app) {
+      app.style.position = 'fixed';
+      app.style.top = `-${scrollY}px`;
+      app.style.left = '0';
+      app.style.right = '0';
+      app.style.overflow = 'hidden';
+      app.style.height = '100vh';
+      app.style.width = '100vw';
+    }
+
+    // Cleanup - restore everything exactly as it was
+    return () => {
+      body.style.cssText = originalBodyStyle;
+      html.style.cssText = originalHtmlStyle;
+      if (app) {
+        app.style.cssText = originalAppStyle;
+      }
+      
+      // Restore scroll position
+      window.scrollTo(0, scrollY);
+      html.scrollTop = scrollY;
+      body.scrollTop = scrollY;
+    };
+  }, [isVisible]);
+
 
 
   // Get current lyric

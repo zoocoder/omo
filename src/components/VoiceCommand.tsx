@@ -46,7 +46,7 @@ export const VoiceCommand: React.FC<VoiceCommandProps> = ({
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
           const transcript = await OpenAIService.transcribeAudio(audioBlob);
           
-          console.log('Voice transcript:', transcript);
+
           
           const commandResult = VoiceCommandService.processCommand(
             transcript,

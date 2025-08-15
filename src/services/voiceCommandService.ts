@@ -18,7 +18,7 @@ export class VoiceCommandService {
     song: Song | null = null
   ): VoiceCommandResult {
     const text = transcript.toLowerCase().trim();
-    console.log('Voice command processing:', { transcript, text });
+
     
     // Find the current or most recent lyric line
     const getCurrentLine = (): LyricLine | null => {
@@ -152,7 +152,7 @@ export class VoiceCommandService {
     // Check for play commands
     for (const pattern of playPatterns) {
       if (pattern.test(text)) {
-        console.log('Play command matched:', pattern, text);
+
         return {
           success: true,
           action: {

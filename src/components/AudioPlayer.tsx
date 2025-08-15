@@ -86,18 +86,18 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
     if (!loopRegion || !loopRegion.isActive) return;
     
     if (time >= loopRegion.endTime) {
-      console.log(`Loop boundary hit: iteration ${loopRegion.currentIteration}, repeatCount ${loopRegion.repeatCount}`);
+
       
       // Check if we should continue looping (currentIteration + 1 because we increment after this check)
       const shouldContinue = loopRegion.repeatCount === 0 || 
                              loopRegion.currentIteration + 1 < loopRegion.repeatCount;
       
-      console.log(`Should continue: ${shouldContinue}`);
+
       
       if (shouldContinue) {
         // Continue loop - seek back to start
         const newIteration = loopRegion.currentIteration + 1;
-        console.log(`Starting iteration ${newIteration}`);
+
         setLoopRegion(prev => prev ? { ...prev, currentIteration: newIteration } : null);
         
         if (isDemoMode) {
@@ -116,7 +116,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
         }
       } else {
         // Loop complete - stop looping
-        console.log('Loop complete, stopping');
+
         setLoopRegion(prev => prev ? { ...prev, isActive: false } : null);
         if (isPlaying) {
           setIsPlaying(false);
@@ -164,7 +164,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
   // Handle duration change
   const handleLoadedMetadata = useCallback(() => {
     if (audioRef.current) {
-      console.log('AudioPlayer: Metadata loaded, current time before reset:', audioRef.current.currentTime);
+
       const dur = audioRef.current.duration * 1000; // Convert to milliseconds
       setDuration(dur);
       onDurationChange(dur);
@@ -174,7 +174,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
       onTimeUpdate(0);
       // Apply current playback rate to new song
       audioRef.current.playbackRate = playbackRate;
-      console.log('AudioPlayer: After metadata reset, current time:', audioRef.current.currentTime, 'playback rate:', audioRef.current.playbackRate);
+
       setIsLoading(false);
       onLoadedData();
 
@@ -299,7 +299,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           audioRef.current.volume = volume;
         }
       } catch (error) {
-        console.log('Audio context resume failed:', error);
+
       }
     }
   }, [volume]);
@@ -765,7 +765,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             await audioRef.current.play();
           }
         } catch (error) {
-          console.log('Failed to resume playback:', error);
+
         }
       }
     };
@@ -830,7 +830,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
   // Update audio source when URL changes
   useEffect(() => {
     if (audioRef.current && audioUrl) {
-      console.log('AudioPlayer: URL changed to', audioUrl, 'current time before reset:', audioRef.current.currentTime);
+
       // Don't show loading spinner - let the play button stay ready
       setIsPlaying(false);
       // Reset time immediately and notify parent
@@ -845,7 +845,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
       audioRef.current.src = absolutePropUrl;
       lastLoadedUrlRef.current = absolutePropUrl;
       audioRef.current.currentTime = 0; // Aggressive reset for mobile
-      console.log('AudioPlayer: Set currentTime to 0, actual value:', audioRef.current.currentTime);
+
       audioRef.current.load();
     } else if (!audioUrl) {
       // Demo mode - no audio file

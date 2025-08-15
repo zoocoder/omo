@@ -143,7 +143,7 @@ function App() {
 
   // Handle audio loaded
   const handleAudioLoaded = useCallback(() => {
-    console.log('Audio loaded successfully');
+
     setError(null); // Clear any previous errors
     // If user selected a song and requested autoplay, start playing now
     if (autoplayRequested && audioPlayerRef.current) {

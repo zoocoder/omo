@@ -101,7 +101,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         
         // Temporary debugging - remove this later
         if (Math.random() < 0.01) { // Log only 1% of the time to avoid spam
-          console.log('Frequency Data:', { lowFreq: lowFreq.toFixed(3), midFreq: midFreq.toFixed(3), highFreq: highFreq.toFixed(3), overall: overall.toFixed(3) });
+
         }
       }
 
