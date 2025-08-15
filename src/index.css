@@ -49,8 +49,24 @@ button {
 
 /* Remove focus outline for transport buttons on mobile */
 .mobile-transport-btn:focus,
-.transport-btn:focus {
+.transport-btn:focus,
+.mobile-play-btn:focus,
+.play-pause-btn:focus {
   outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Additional mobile tap highlight removal */
+.mobile-transport-btn,
+.transport-btn,
+.mobile-play-btn,
+.play-pause-btn {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 button:disabled {
