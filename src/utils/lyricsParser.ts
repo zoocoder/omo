@@ -1,4 +1,5 @@
 import { LyricsData, Song } from '../types/lyrics';
+import { getAudioUrl, getCoverUrl } from '../config/audio';
 
 export class LyricsParser {
   /**
@@ -75,8 +76,8 @@ export class LyricsParser {
    */
   static async loadSong(songId: string): Promise<Song> {
     const lyricsPath = `/data/songs/${songId}/lyrics.json`;
-    const audioPath = `/data/songs/${songId}/audio.mp3`;
-    const coverJpg = `/data/songs/${songId}/cover.jpg`;
+    const audioPath = getAudioUrl(songId);
+    const coverJpg = getCoverUrl(songId);
     
     const lyricsData = await this.loadFromFile(lyricsPath);
     
