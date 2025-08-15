@@ -1144,6 +1144,11 @@ function App() {
           .loop-controls-mobile { display: block; margin-top: 8px; }
           .mobile-playlist-toggle { display: flex; }
         }
+        
+        /* Hide loop controls specifically on mobile web browsers (not native apps) */
+        @media (max-width: 768px) and (pointer: coarse) and (hover: none) {
+          .loop-controls-mobile { display: none !important; }
+        }
         }
 
         .error-banner {
