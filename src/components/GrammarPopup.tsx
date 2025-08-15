@@ -324,11 +324,13 @@ export const GrammarPopup: React.FC<GrammarPopupProps> = ({
         @media (max-width: 768px) {
           .grammar-popup-overlay {
             padding: 16px;
+            padding-top: max(120px, env(safe-area-inset-top) + 104px);
+            align-items: flex-start;
           }
           
           .grammar-popup {
             max-width: 100%;
-            max-height: 85vh;
+            max-height: calc(100vh - max(140px, env(safe-area-inset-top) + 124px));
           }
         }
       `}</style>
