@@ -1107,6 +1107,7 @@ function App() {
 
         @media (max-width: 768px) {
           .app-header { 
+            position: -webkit-sticky;
             position: sticky;
             top: 0;
             padding: max(24px, env(safe-area-inset-top) + 16px) 12px 16px;
@@ -1116,10 +1117,12 @@ function App() {
             animation: gradientShift 8s ease infinite;
             z-index: 1000;
             will-change: transform;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
+            transform: translate3d(0, 0, 0);
+            -webkit-transform: translate3d(0, 0, 0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            contain: layout style paint;
+            isolation: isolate;
           }
 
           .header-row { 
@@ -1314,7 +1317,7 @@ function App() {
           }
 
           .app-main {
-            padding: 0 16px 32px;
+            padding: 0 16px max(60px, env(safe-area-inset-bottom) + 32px);
           }
         }
 
