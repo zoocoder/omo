@@ -499,6 +499,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           .chat-overlay {
             display: block;
           }
+
+          .chat-interface {
+            position: fixed;
+            top: max(120px, env(safe-area-inset-top) + 104px);
+            left: 16px;
+            right: 16px;
+            bottom: max(24px, env(safe-area-inset-bottom) + 8px);
+            width: auto;
+            height: auto;
+            max-height: none;
+          }
         }
       `}</style>
     </div>
