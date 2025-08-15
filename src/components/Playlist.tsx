@@ -170,7 +170,7 @@ export const Playlist: React.FC<PlaylistProps> = ({
 
         .reopen-btn-container {
           position: absolute;
-          top: 16px;
+          top: 36px;
           left: 10px;
           z-index: 1300;
         }
@@ -284,9 +284,9 @@ export const Playlist: React.FC<PlaylistProps> = ({
         @media (max-width: 768px) {
           .playlist-sidebar {
             position: fixed;
-            top: max(90px, env(safe-area-inset-top) + 50px);
+            top: max(110px, env(safe-area-inset-top) + 70px);
             left: 0;
-            height: calc(100vh - max(90px, env(safe-area-inset-top) + 50px) - env(safe-area-inset-bottom));
+            height: calc(100vh - max(110px, env(safe-area-inset-top) + 70px) - env(safe-area-inset-bottom));
             width: 75vw;
             max-width: 320px;
             transform: translateX(${isVisible ? '0' : '-100%'});

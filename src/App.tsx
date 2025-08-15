@@ -422,7 +422,7 @@ function App() {
             className="mobile-playlist-toggle"
             aria-label={isPlaylistVisible ? "Close playlist" : "Open playlist"}
           >
-            ☰
+            {isPlaylistVisible ? '‹' : '›'}
           </button>
           
           <div className="header-row">
@@ -911,28 +911,30 @@ function App() {
         }
 
         .mobile-playlist-toggle {
-          position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: rgba(255,255,255,0.15);
+          background: linear-gradient(135deg, #7955f2, #9a6ff2);
           border: none;
           color: white;
-          font-size: 20px;
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
+          font-size: 16px;
+          width: 32px;
+          height: 32px;
+          border-radius: 6px;
           cursor: pointer;
-          display: none;
+          display: flex;
           align-items: center;
           justify-content: center;
-          transition: background 0.2s ease;
-          backdrop-filter: blur(10px);
-          z-index: 1000;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(121, 85, 242, 0.3);
+          position: absolute;
+          top: 50%;
+          left: 12px;
+          transform: translateY(-50%);
+          z-index: 10;
         }
 
         .mobile-playlist-toggle:hover {
-          background: rgba(255,255,255,0.25);
+          background: linear-gradient(135deg, #8b66f2, #a876f2);
+          transform: translateY(-50%) scale(1.1);
+          box-shadow: 0 4px 12px rgba(121, 85, 242, 0.5);
         }
 
         .app-name {
@@ -1163,7 +1165,7 @@ function App() {
           .player-controls { grid-template-columns: 1fr; gap: 6px; touch-action: pan-y; margin-bottom: 2px; }
           .loop-controls-desktop { display: none; }
           .loop-controls-mobile { display: block; margin-top: 8px; }
-          .mobile-playlist-toggle { display: flex; }
+          .mobile-playlist-toggle { display: block; }
         }
         }
 
