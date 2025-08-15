@@ -404,12 +404,9 @@ function App() {
           />
 
           <button 
-            onClick={() => {
-              console.log('Hamburger clicked, current visibility:', isPlaylistVisible);
-              setIsPlaylistVisible(true);
-            }}
+            onClick={() => setIsPlaylistVisible(!isPlaylistVisible)}
             className="mobile-playlist-toggle"
-            aria-label="Open playlist"
+            aria-label={isPlaylistVisible ? "Close playlist" : "Open playlist"}
           >
             ☰
           </button>
