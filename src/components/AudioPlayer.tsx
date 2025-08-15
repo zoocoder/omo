@@ -707,6 +707,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           ref={audioRef}
           src={audioUrl}
           preload="metadata"
+          crossOrigin="anonymous"
         />
       )}
       
