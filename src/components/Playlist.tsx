@@ -58,6 +58,14 @@ export const Playlist: React.FC<PlaylistProps> = ({
 
   return (
     <>
+      {/* Mobile overlay - click to close */}
+      {isVisible && (
+        <div 
+          className="playlist-overlay"
+          onClick={onToggle}
+        />
+      )}
+      
       <div 
         className={`playlist-sidebar ${isVisible ? 'visible' : ''}`}
         onTouchStart={handleTouchStart}
@@ -304,6 +312,24 @@ export const Playlist: React.FC<PlaylistProps> = ({
           .playlist-header h3 { font-size: 15px; }
           .song-title .japanese { font-size: 13px; }
           .song-title .english { font-size: 11px; }
+        }
+
+        .playlist-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 999;
+          display: none;
+          cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+          .playlist-overlay {
+            display: block;
+          }
         }
       `}</style>
     </>

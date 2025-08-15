@@ -1107,22 +1107,18 @@ function App() {
 
         @media (max-width: 768px) {
           .app-header { 
-            position: -webkit-sticky;
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
             padding: max(24px, env(safe-area-inset-top) + 16px) 12px 16px;
-            touch-action: pan-y; 
             background: ${getSimpleGradient()};
             background-size: 300% 300%;
             animation: gradientShift 8s ease infinite;
             z-index: 1000;
-            will-change: transform;
-            transform: translate3d(0, 0, 0);
-            -webkit-transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            contain: layout style paint;
-            isolation: isolate;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
           }
 
           .header-row { 
@@ -1317,7 +1313,8 @@ function App() {
           }
 
           .app-main {
-            padding: 0 16px max(60px, env(safe-area-inset-bottom) + 32px);
+            padding: 0 16px max(80px, env(safe-area-inset-bottom) + 48px);
+            margin-top: max(88px, env(safe-area-inset-top) + 72px);
           }
         }
 
