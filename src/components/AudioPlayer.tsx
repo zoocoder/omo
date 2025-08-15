@@ -1157,7 +1157,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
         @media (max-width: 768px) {
           .audio-player { 
             padding: 20px 16px 18px 16px; 
-            margin: 8px 0; 
+            margin: 4px 0; 
             border-radius: 16px;
             width: 100%;
             height: 240px;

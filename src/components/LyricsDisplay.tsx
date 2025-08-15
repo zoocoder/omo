@@ -481,7 +481,7 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
         /* Mobile responsive */
         @media (max-width: 768px) {
           .lyrics-display {
-            padding: 14px;
+            padding: 10px;
             margin: 0px 0 8px 0;
             border-radius: 16px;
             max-height: calc(100vh - 240px);
@@ -496,7 +496,7 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
           }
 
           .lyrics-container {
-            padding: 16px;
+            padding: 8px 12px 12px;
           }
 
           .column-headers {

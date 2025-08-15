@@ -1162,7 +1162,7 @@ function App() {
           .pig-mascot { width: 45px; height: 63px; }
           .app-branding { transform: translateX(0) !important; }
           .brand-title { transform: translateX(0) !important; }
-          .player-controls { grid-template-columns: 1fr; gap: 8px; touch-action: pan-y; }
+          .player-controls { grid-template-columns: 1fr; gap: 8px; touch-action: pan-y; margin-bottom: 4px; }
           .loop-controls-desktop { display: none; }
           .loop-controls-mobile { display: block; margin-top: 8px; }
           .mobile-playlist-toggle { display: flex; }
