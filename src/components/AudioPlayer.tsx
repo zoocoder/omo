@@ -1158,7 +1158,10 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           .audio-player { 
             padding: 16px; 
             margin: 8px 0; 
-            border-radius: 16px; 
+            border-radius: 16px;
+            width: 100%;
+            min-height: 280px;
+            box-sizing: border-box;
           }
           
           /* Hide desktop layout on mobile */
@@ -1168,7 +1171,10 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           .mobile-spotify-layout { 
             display: flex; 
             flex-direction: column; 
-            gap: 20px; 
+            gap: 20px;
+            width: 100%;
+            height: 100%;
+            min-height: 248px;
           }
           
           /* Layer 1: Song info */
@@ -1176,6 +1182,8 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             display: flex;
             align-items: center;
             gap: 16px;
+            min-height: 64px;
+            flex-shrink: 0;
           }
           
           .mobile-cover-art {
@@ -1264,6 +1272,8 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             align-items: center;
             justify-content: center;
             gap: 40px;
+            min-height: 64px;
+            flex-shrink: 0;
           }
           
           .mobile-transport-btn {
