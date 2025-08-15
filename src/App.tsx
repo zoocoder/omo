@@ -1313,7 +1313,7 @@ function App() {
           }
 
           .app-main {
-            padding: 0 16px max(80px, env(safe-area-inset-bottom) + 48px);
+            padding: 24px 16px max(100px, env(safe-area-inset-bottom) + 64px);
             margin-top: max(88px, env(safe-area-inset-top) + 72px);
           }
         }
