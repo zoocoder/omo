@@ -30,7 +30,7 @@ export const SONGS: SongInfo[] = [
     titleRomaji: 'Kiseki', 
     titleEnglish: 'Miracle',
     artist: 'GReeeeN',
-    duration: 276000
+    duration: 273000
   },
   {
     id: 'motohiro-hata-001',
@@ -38,7 +38,7 @@ export const SONGS: SongInfo[] = [
     titleRomaji: 'Rain',
     titleEnglish: 'Rain',
     artist: 'Motohiro Hata',
-    duration: 300000
+    duration: 282000
   },
   {
     id: 'creepy-nuts-001',
@@ -46,7 +46,7 @@ export const SONGS: SongInfo[] = [
     titleRomaji: 'Bling-Bang-Bang-Born',
     titleEnglish: 'Bling-Bang-Bang-Born',
     artist: 'Creepy Nuts',
-    duration: 180000
+    duration: 168000
   }
 ];
 
