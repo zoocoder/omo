@@ -1296,10 +1296,24 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             transform: scale(1.1);
           }
 
-          .mobile-transport-btn:focus {
-            color: #ffffff;
-            outline: none;
-            transform: none;
+          /* Override ALL states for mobile to prevent green highlighting */
+          .mobile-transport-btn:focus,
+          .mobile-transport-btn:active,
+          .mobile-transport-btn:focus:not(:disabled),
+          .mobile-transport-btn:active:not(:disabled) {
+            color: #ffffff !important;
+            background: none !important;
+            outline: none !important;
+            transform: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+          }
+
+          /* Additional mobile-specific override for touch devices */
+          @media (pointer: coarse) {
+            .mobile-transport-btn:hover:not(:disabled) {
+              color: #ffffff !important;
+              transform: none !important;
+            }
           }
           
           .mobile-transport-btn:disabled {
