@@ -1,0 +1,394 @@
+{
+  "metadata": {
+    "title": "Kiseki (奇跡)",
+    "artist": "GReeeeN",
+    "duration": 276000
+  },
+  "lyrics": [
+    {
+      "startTime": 0,
+      "endTime": 26000,
+      "japanese": "明日 今日よりも好きになれる",
+      "romaji": "ashita kyou yori mo suki ni nareru",
+      "english": "Tomorrow I can love you more than today"
+    },
+    {
+      "startTime": 26000,
+      "endTime": 31500,
+      "japanese": "溢れる想いが止まらない",
+      "romaji": "afureru omoi ga tomaranai",
+      "english": "These overflowing feelings won't stop"
+    },
+    {
+      "startTime": 31500,
+      "endTime": 37500,
+      "japanese": "今もこんなに好きでいるのに",
+      "romaji": "ima mo konna ni suki de iru no ni",
+      "english": "Even though I love you so much right now"
+    },
+    {
+      "startTime": 37500,
+      "endTime": 42000,
+      "japanese": "言葉に出来ない",
+      "romaji": "kotoba ni dekinai",
+      "english": "I can't put it into words"
+    },
+    {
+      "startTime": 42000,
+      "endTime": 48000,
+      "japanese": "君のくれた日々が積み重なり",
+      "romaji": "kimi no kureta hibi ga tsumikasanari",
+      "english": "The days you gave me pile up"
+    },
+    {
+      "startTime": 48000,
+      "endTime": 53000,
+      "japanese": "過ぎ去った日々2人歩いた『軌跡』",
+      "romaji": "sugisatta hibi futari aruita 'kiseki'",
+      "english": "The path we walked together through those past days"
+    },
+    {
+      "startTime": 53000,
+      "endTime": 58500,
+      "japanese": "僕らの出逢いがもし偶然ならば?",
+      "romaji": "bokura no deai ga moshi guuzen naraba?",
+      "english": "If our meeting was by chance?"
+    },
+    {
+      "startTime": 58500,
+      "endTime": 60000,
+      "japanese": "運命ならば?",
+      "romaji": "unmei naraba?",
+      "english": "If it was destiny?"
+    },
+    {
+      "startTime": 60000,
+      "endTime": 64500,
+      "japanese": "君に巡り合えた それって『奇跡』",
+      "romaji": "kimi ni meguriaeta sore tte 'kiseki'",
+      "english": "Meeting you - that's a miracle"
+    },
+    {
+      "startTime": 64500,
+      "endTime": 67000,
+      "japanese": "2人寄り添って歩いて",
+      "romaji": "futari yorisotte aruite",
+      "english": "Walking together, side by side"
+    },
+    {
+      "startTime": 67000,
+      "endTime": 69500,
+      "japanese": "永久の愛を形にして",
+      "romaji": "towa no ai no katachi ni shite",
+      "english": "Giving shape to eternal love"
+    },
+    {
+      "startTime": 69500,
+      "endTime": 72000,
+      "japanese": "いつまでも君の横で",
+      "romaji": "itsumademo kimi no yoko de",
+      "english": "Forever by your side"
+    },
+    {
+      "startTime": 72000,
+      "endTime": 76500,
+      "japanese": "笑っていたくて",
+      "romaji": "waratte itakute",
+      "english": "I want to keep smiling"
+    },
+    {
+      "startTime": 76500,
+      "endTime": 81000,
+      "japanese": "アリガトウや ah 愛してるじゃまだ足りないけど",
+      "romaji": "arigatou ya ah aishiteru ja mada tarinai kedo",
+      "english": "Thank you or 'I love you' still isn't enough, but"
+    },
+    {
+      "startTime": 81000,
+      "endTime": 85000,
+      "japanese": "せめて言わせて 「幸せです」と",
+      "romaji": "semete iwasete 'shiawase desu' to",
+      "english": "At least let me say 'I am happy'"
+    },
+    {
+      "startTime": 85000,
+      "endTime": 90500,
+      "japanese": "いつも君の右の手の平を",
+      "romaji": "itsumo kimi no migi no te no hira wo",
+      "english": "Your right palm always"
+    },
+    {
+      "startTime": 90500,
+      "endTime": 95500,
+      "japanese": "ただ僕の左の手の平が",
+      "romaji": "tada boku no hidari no te no hira ga",
+      "english": "My left palm simply"
+    },
+    {
+      "startTime": 95500,
+      "endTime": 101500,
+      "japanese": "そっと包んでくそれだけで",
+      "romaji": "sotto tsutsunde ku sore dake de",
+      "english": "Gently wraps around it, just that"
+    },
+    {
+      "startTime": 101500,
+      "endTime": 106500,
+      "japanese": "ただ愛を感じていた",
+      "romaji": "tada ai wo kanjite ita",
+      "english": "I simply felt love"
+    },
+    {
+      "startTime": 106500,
+      "endTime": 112000,
+      "japanese": "日々の中で 小さな幸せ",
+      "romaji": "hibi no naka de chiisana shiawase",
+      "english": "In daily life, small happiness"
+    },
+    {
+      "startTime": 112000,
+      "endTime": 117000,
+      "japanese": "見つけ重ね ゆっくり歩いた『軌跡』",
+      "romaji": "mitsuke kasane yukkuri aruita 'kiseki'",
+      "english": "Finding and layering, the path we slowly walked"
+    },
+    {
+      "startTime": 117000,
+      "endTime": 122500,
+      "japanese": "僕らの出会いは大きな世界で",
+      "romaji": "bokura no deai wa ookina sekai de",
+      "english": "Our meeting in this big world"
+    },
+    {
+      "startTime": 122500,
+      "endTime": 125000,
+      "japanese": "小さな出来事",
+      "romaji": "chiisana dekigoto",
+      "english": "Was a small event"
+    },
+    {
+      "startTime": 125000,
+      "endTime": 128500,
+      "japanese": "巡り合えた それって『奇跡』",
+      "romaji": "meguriaeta sore tte 'kiseki'",
+      "english": "Meeting each other - that's a miracle"
+    },
+    {
+      "startTime": 128500,
+      "endTime": 131000,
+      "japanese": "うまく行かない日だって",
+      "romaji": "umaku ikanai hi datte",
+      "english": "Even on days when things don't go well"
+    },
+    {
+      "startTime": 131000,
+      "endTime": 133500,
+      "japanese": "2人で居れば晴れだって!",
+      "romaji": "futari de ireba hare datte!",
+      "english": "If we're together, it's sunny!"
+    },
+    {
+      "startTime": 133500,
+      "endTime": 136500,
+      "japanese": "強がりや寂しさも",
+      "romaji": "tsuyogari ya sabishisa mo",
+      "english": "Putting on a brave face and loneliness too"
+    },
+    {
+      "startTime": 136500,
+      "endTime": 138500,
+      "japanese": "忘れられるから",
+      "romaji": "wasurerareru kara",
+      "english": "Can be forgotten"
+    },
+    {
+      "startTime": 138500,
+      "endTime": 143800,
+      "japanese": "僕は君でなら 僕で居れるから!",
+      "romaji": "boku wa kimi de nara boku de ireru kara!",
+      "english": "With you, I can be myself!"
+    },
+    {
+      "startTime": 143800,
+      "endTime": 148500,
+      "japanese": "だからいつも そばにいてよ 『愛しい君へ』",
+      "romaji": "dakara itsumo soba ni ite yo 'itoshii kimi e'",
+      "english": "So always stay by my side, 'to my beloved you'"
+    },
+    {
+      "startTime": 148500,
+      "endTime": 151000,
+      "japanese": "2人フザけあった帰り道",
+      "romaji": "futari fuzakeatta kaerimichi",
+      "english": "The way home where we both fooled around"
+    },
+    {
+      "startTime": 151000,
+      "endTime": 153500,
+      "japanese": "それも大切な僕らの日々",
+      "romaji": "sore mo taisetsu na bokura no hibi",
+      "english": "That too is part of our precious days"
+    },
+    {
+      "startTime": 153500,
+      "endTime": 156500,
+      "japanese": "「想いよ届け!!!」と伝えた時に",
+      "romaji": "'omoi yo todoke!!!' to tsutaeta toki ni",
+      "english": "When I said 'Let my feelings reach you!!!'"
+    },
+    {
+      "startTime": 156500,
+      "endTime": 158800,
+      "japanese": "初めて見せた表情の君",
+      "romaji": "hajimete miseta hyoujou no kimi",
+      "english": "The expression you showed for the first time"
+    },
+    {
+      "startTime": 158800,
+      "endTime": 161000,
+      "japanese": "少し間が空いて 君がうなずいて",
+      "romaji": "sukoshi ma ga aite kimi ga unazuite",
+      "english": "After a brief pause, you nodded"
+    },
+    {
+      "startTime": 161000,
+      "endTime": 164500,
+      "japanese": "僕らの心 満たされてく愛で",
+      "romaji": "bokura no kokoro mitasarete ku ai de",
+      "english": "Our hearts filled with growing love"
+    },
+    {
+      "startTime": 164500,
+      "endTime": 167000,
+      "japanese": "ぼくらまだ旅の途中で",
+      "romaji": "bokura mada tabi no tochuu de",
+      "english": "We're still in the middle of our journey"
+    },
+    {
+      "startTime": 167000,
+      "endTime": 169800,
+      "japanese": "またこれから先も 何十年",
+      "romaji": "mata kore kara saki mo nanjuunen",
+      "english": "And from now on, for decades more"
+    },
+    {
+      "startTime": 169800,
+      "endTime": 181000,
+      "japanese": "続いていけるような未来へ",
+      "romaji": "tsuzuite ikeru you na mirai e",
+      "english": "Toward a future we can continue together"
+    },
+    {
+      "startTime": 181000,
+      "endTime": 188800,
+      "japanese": "例えばほら 明日を見失いそうに",
+      "romaji": "tatoeba hora ashita wo miushinai sou ni",
+      "english": "For example, look, even if we seem to lose sight of tomorrow"
+    },
+    {
+      "startTime": 188800,
+      "endTime": 191000,
+      "japanese": "僕らなったとしても",
+      "romaji": "bokura natta to shitemo",
+      "english": "Even if we become like that"
+    },
+    {
+      "startTime": 191000,
+      "endTime": 193500,
+      "japanese": "2人寄り添って歩いて",
+      "romaji": "futari yorisotte aruite",
+      "english": "Walking together, side by side"
+    },
+    {
+      "startTime": 193500,
+      "endTime": 196500,
+      "japanese": "永久の愛を形にして",
+      "romaji": "towa no ai no katachi ni shite",
+      "english": "Giving shape to eternal love"
+    },
+    {
+      "startTime": 196500,
+      "endTime": 198500,
+      "japanese": "いつまでも君の横で",
+      "romaji": "itsumademo kimi no yoko de",
+      "english": "Forever by your side"
+    },
+    {
+      "startTime": 198500,
+      "endTime": 201000,
+      "japanese": "笑っていたくて",
+      "romaji": "waratte itakute",
+      "english": "I want to keep smiling"
+    },
+    {
+      "startTime": 201000,
+      "endTime": 207500,
+      "japanese": "アリガトウや ah 愛してるじゃまだ足りないけど",
+      "romaji": "arigatou ya ah aishiteru ja mada tarinai kedo",
+      "english": "Thank you or 'I love you' still isn't enough, but"
+    },
+    {
+      "startTime": 207500,
+      "endTime": 212500,
+      "japanese": "せめて言わせて 「幸せです」と",
+      "romaji": "semete iwasete 'shiawase desu' to",
+      "english": "At least let me say 'I am happy'"
+    },
+    {
+      "startTime": 212500,
+      "endTime": 215000,
+      "japanese": "うまく行かない日だって",
+      "romaji": "umaku ikanai hi datte",
+      "english": "Even on days when things don't go well"
+    },
+    {
+      "startTime": 215000,
+      "endTime": 217500,
+      "japanese": "2人で居れば晴れだって!",
+      "romaji": "futari de ireba hare datte!",
+      "english": "If we're together, it's sunny!"
+    },
+    {
+      "startTime": 217500,
+      "endTime": 220000,
+      "japanese": "喜びや悲しみも",
+      "romaji": "yorokobi ya kanashimi mo",
+      "english": "Joy and sadness too"
+    },
+    {
+      "startTime": 220000,
+      "endTime": 222000,
+      "japanese": "全て分け合える",
+      "romaji": "subete wakeaeru",
+      "english": "We can share everything"
+    },
+    {
+      "startTime": 222000,
+      "endTime": 227500,
+      "japanese": "君がいるから 生きていけるから!",
+      "romaji": "kimi ga iru kara ikite ikeru kara!",
+      "english": "Because you're here, I can keep living!"
+    },
+    {
+      "startTime": 227500,
+      "endTime": 236000,
+      "japanese": "だからいつも そばにいてよ 『愛しい君へ』",
+      "romaji": "dakara itsumo soba ni ite yo 'itoshii kimi e'",
+      "english": "So always stay by my side, 'to my beloved you'"
+    },
+    {
+      "startTime": 236000,
+      "endTime": 247500,
+      "japanese": "最後の一秒まで",
+      "romaji": "saigo no ichibyou made",
+      "english": "Until the very last second"
+    },
+    {
+      "startTime": 247500,
+      "endTime": 277000,
+      "japanese": "明日 今日より笑顔になれる 君がいるだけで そう思えるから 何十年 何百年 何千年 時を超えよう 君を愛してる",
+      "romaji": "ashita kyou yori egao ni nareru kimi ga iru dake de sou omoeru kara nanjuunen nanbyakun nansennen toki wo koeyou kimi wo aishiteru",
+      "english": "Tomorrow I can smile more than today, just because you're here I can think so. Decades, centuries, thousands of years - let's transcend time. I love you"
+    }
+  ]
+}
