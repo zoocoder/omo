@@ -316,6 +316,7 @@ function App() {
   const handleSongSelect = useCallback(async (songId: string) => {
     setCurrentSongId(songId);
     setAutoplayRequested(true);
+    setIsPlaying(true); // Immediately set playing state to avoid button flash
     // Keep sidebar open on desktop, close on small screens
     if (typeof window !== 'undefined' && window.innerWidth <= 768) {
       setIsPlaylistVisible(false);
@@ -330,6 +331,7 @@ function App() {
     if (nextSong) {
       setCurrentSongId(nextSong.id);
       setAutoplayRequested(true);
+      setIsPlaying(true); // Immediately set playing state to avoid button flash
     }
   }, [currentSongId]);
 
@@ -552,6 +554,7 @@ function App() {
                   if (next) {
                     setCurrentSongId(next.id);
                     setAutoplayRequested(true);
+                    setIsPlaying(true); // Immediately set playing state to avoid button flash
                   }
                 }}
                 onPrev={() => {
@@ -559,6 +562,7 @@ function App() {
                   if (prev) {
                     setCurrentSongId(prev.id);
                     setAutoplayRequested(true);
+                    setIsPlaying(true); // Immediately set playing state to avoid button flash
                   }
                 }}
               />
