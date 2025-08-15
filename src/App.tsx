@@ -25,6 +25,11 @@ function App() {
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [autoplayRequested, setAutoplayRequested] = useState(false);
 
+  // Check if device is mobile web (not native app)
+  const isMobileWeb = useCallback(() => {
+    return window.innerWidth <= 768 && 'ontouchstart' in window && !window.navigator.userAgent.includes('Mobile/');
+  }, []);
+
   // Loop state management
   const {
     loopState,
@@ -629,6 +634,7 @@ function App() {
               onResetLoop={handleResetLoop}
               hasLyricsSelected={loopState.selectedLyricIndices.length > 0}
               calculatedTimeRange={getCalculatedTimeRange(song?.lyricsData || null)}
+              isMobileWeb={isMobileWeb()}
             />
           </div>
         )}
@@ -1143,11 +1149,6 @@ function App() {
           .loop-controls-desktop { display: none; }
           .loop-controls-mobile { display: block; margin-top: 8px; }
           .mobile-playlist-toggle { display: flex; }
-        }
-        
-        /* Hide loop controls specifically on mobile web browsers (not native apps) */
-        @media (max-width: 768px) and (pointer: coarse) and (hover: none) {
-          .loop-controls-mobile { display: none !important; }
         }
         }
 

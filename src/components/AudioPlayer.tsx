@@ -431,33 +431,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
     onTimeUpdate(0);
   }, [currentTime, onPrev, isDemoMode, isPlaying, onTimeUpdate, startDemoTimer]);
 
-  // Skip backward 5 seconds
-  const skipBackward = useCallback(() => {
-    if (isDemoMode) {
-      const newTime = Math.max(0, currentTime - 5000);
-      setCurrentTime(newTime);
-      onTimeUpdate(newTime);
-    } else if (audioRef.current) {
-      const newTime = Math.max(0, audioRef.current.currentTime - 5);
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime * 1000);
-      onTimeUpdate(newTime * 1000);
-    }
-  }, [isDemoMode, currentTime, onTimeUpdate]);
 
-  // Skip forward 5 seconds
-  const skipForward = useCallback(() => {
-    if (isDemoMode) {
-      const newTime = Math.min(duration, currentTime + 5000);
-      setCurrentTime(newTime);
-      onTimeUpdate(newTime);
-    } else if (audioRef.current) {
-      const newTime = Math.min(audioRef.current.duration || 0, audioRef.current.currentTime + 5);
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime * 1000);
-      onTimeUpdate(newTime * 1000);
-    }
-  }, [isDemoMode, currentTime, duration, onTimeUpdate]);
 
   // Seek to specific time and start playing
   const seekTo = useCallback((timeInMs: number) => {
@@ -800,18 +774,6 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           </button>
 
           <button
-            onClick={skipBackward}
-            disabled={isLoading}
-            className="mobile-skip-btn"
-            aria-label="Skip backward 5 seconds"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.5 3c-1.74 0-3.41.81-4.5 2.09C6.42 6.36 5.54 8.09 5.54 10H3l4 4 4-4H8.46c0-3.86 3.14-7 7.04-7s7.04 3.14 7.04 7-3.14 7-7.04 7c-1.9 0-3.62-.76-4.88-1.99L9.34 16.3c1.64 1.61 3.84 2.49 6.16 2.49 4.97 0 9-4.03 9-9s-4.03-9-9-9z"/>
-            </svg>
-            <span className="skip-label">5</span>
-          </button>
-
-          <button
             onClick={togglePlayPause}
             disabled={isLoading}
             className="mobile-play-btn"
@@ -829,18 +791,6 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
                 <path d="M8 5v14l11-7z"/>
               </svg>
             )}
-          </button>
-
-          <button
-            onClick={skipForward}
-            disabled={isLoading}
-            className="mobile-skip-btn"
-            aria-label="Skip forward 5 seconds"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{transform: 'scaleX(-1)'}}>
-              <path d="M12.5 3c-1.74 0-3.41.81-4.5 2.09C6.42 6.36 5.54 8.09 5.54 10H3l4 4 4-4H8.46c0-3.86 3.14-7 7.04-7s7.04 3.14 7.04 7-3.14 7-7.04 7c-1.9 0-3.62-.76-4.88-1.99L9.34 16.3c1.64 1.61 3.84 2.49 6.16 2.49 4.97 0 9-4.03 9-9s-4.03-9-9-9z"/>
-            </svg>
-            <span className="skip-label">5</span>
           </button>
 
           <button
@@ -1313,7 +1263,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 24px;
+            gap: 40px;
           }
           
           .mobile-transport-btn {
@@ -1340,40 +1290,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             cursor: not-allowed;
           }
           
-          .mobile-skip-btn {
-            background: none;
-            border: none;
-            color: #ffffff;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.2s ease;
-            position: relative;
-          }
-          
-          .mobile-skip-btn:hover:not(:disabled) {
-            color: #1db954;
-            transform: scale(1.1);
-            background: rgba(29, 185, 84, 0.1);
-          }
-          
-          .mobile-skip-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-          }
-          
-          .skip-label {
-            position: absolute;
-            font-size: 8px;
-            font-weight: bold;
-            bottom: 8px;
-            color: inherit;
-          }
+
           
           .mobile-play-btn {
             background: #ffffff;

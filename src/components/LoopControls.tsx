@@ -14,6 +14,7 @@ interface LoopControlsProps {
   onResetLoop: () => void;
   hasLyricsSelected: boolean;
   calculatedTimeRange: { startTime: number; endTime: number };
+  isMobileWeb?: boolean;
 }
 
 export const LoopControls: React.FC<LoopControlsProps> = ({
@@ -29,6 +30,7 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
   onResetLoop,
   hasLyricsSelected,
   calculatedTimeRange,
+  isMobileWeb = false,
 }) => {
   const [timeLoopStart, setTimeLoopStart] = useState(0);
   const [timeLoopEnd, setTimeLoopEnd] = useState(Math.min(30000, duration)); // Default 30 seconds
@@ -269,35 +271,37 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
           </div>
         </div>
 
-        {/* Lyrics Loop Section */}
-        <div className="lyrics-loop-section">
-          <h3 className="section-title">Selected Lyrics</h3>
-          {!hasLyricsSelected && (
-            <p className="no-selection-text">Drag across lyric cards to select a range for looping</p>
-          )}
-          <div className="lyrics-loop-info">
-            {hasLyricsSelected && (
-              <>
-                <p>Range: {formatTime(calculatedTimeRange.startTime)} - {formatTime(calculatedTimeRange.endTime)}</p>
-                <div className="lyrics-controls">
-                  <div className="repeat-counter">
-                    <button onClick={decrementRepeatCount} className="counter-btn">−</button>
-                    <span className="counter-display">
-                      {repeatCount === 0 ? '∞' : `${repeatCount}x`}
-                    </span>
-                    <button onClick={incrementRepeatCount} className="counter-btn">+</button>
-                    <button onClick={setInfiniteLoop} className={`infinite-toggle ${repeatCount === 0 ? 'active' : ''}`}>
-                      ∞
+        {/* Lyrics Loop Section - Hidden on mobile web */}
+        {!isMobileWeb && (
+          <div className="lyrics-loop-section">
+            <h3 className="section-title">Selected Lyrics</h3>
+            {!hasLyricsSelected && (
+              <p className="no-selection-text">Drag across lyric cards to select a range for looping</p>
+            )}
+            <div className="lyrics-loop-info">
+              {hasLyricsSelected && (
+                <>
+                  <p>Range: {formatTime(calculatedTimeRange.startTime)} - {formatTime(calculatedTimeRange.endTime)}</p>
+                  <div className="lyrics-controls">
+                    <div className="repeat-counter">
+                      <button onClick={decrementRepeatCount} className="counter-btn">−</button>
+                      <span className="counter-display">
+                        {repeatCount === 0 ? '∞' : `${repeatCount}x`}
+                      </span>
+                      <button onClick={incrementRepeatCount} className="counter-btn">+</button>
+                      <button onClick={setInfiniteLoop} className={`infinite-toggle ${repeatCount === 0 ? 'active' : ''}`}>
+                        ∞
+                      </button>
+                    </div>
+                    <button onClick={handleStartLyricsLoop} className="start-lyrics-loop-btn">
+                      Play Loop
                     </button>
                   </div>
-                  <button onClick={handleStartLyricsLoop} className="start-lyrics-loop-btn">
-                    Play Loop
-                  </button>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Active Loop Controls */}
@@ -340,6 +344,11 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
           grid-template-columns: 2fr 1fr;
           gap: 24px;
           align-items: stretch;
+        }
+
+        /* Single column layout when lyrics section is hidden */
+        .loop-sections-container:has(.timeline-loop-section:only-child) {
+          grid-template-columns: 1fr;
         }
 
         .loop-status {
