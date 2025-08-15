@@ -31,6 +31,14 @@ export const SONGS: SongInfo[] = [
     titleEnglish: 'Miracle',
     artist: 'GReeeeN',
     duration: 276000
+  },
+  {
+    id: 'rain-001',
+    title: 'Rain',
+    titleRomaji: 'Rain',
+    titleEnglish: 'Rain',
+    artist: 'Motohiro Hata',
+    duration: 300000
   }
 ];
 
