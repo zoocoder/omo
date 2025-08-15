@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { LyricLine } from '../types/lyrics';
 
 interface GrammarPopupProps {
@@ -46,7 +47,7 @@ export const GrammarPopup: React.FC<GrammarPopupProps> = ({
 
   if (!line && !lines) return null;
 
-  return (
+  const popupContent = (
     <div className="grammar-popup-overlay">
       <div 
         ref={popupRef}
@@ -126,7 +127,7 @@ export const GrammarPopup: React.FC<GrammarPopupProps> = ({
           right: 0;
           bottom: 0;
           background: rgba(0, 0, 0, 0.8);
-          z-index: 1000;
+          z-index: 1000000;
           backdrop-filter: blur(4px);
           display: flex;
           align-items: flex-start;
@@ -134,6 +135,8 @@ export const GrammarPopup: React.FC<GrammarPopupProps> = ({
           padding: 0 20px;
           box-sizing: border-box;
           padding-top: 15vh;
+          overflow: hidden;
+          touch-action: none;
         }
 
         .grammar-popup {
@@ -146,8 +149,10 @@ export const GrammarPopup: React.FC<GrammarPopupProps> = ({
           border: 1px solid #404040;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
           overflow: hidden;
-          animation: popupAppear 0.2s ease-out;
+          animation: popupAppear 0.2s ease-out forwards;
           box-sizing: border-box;
+          opacity: 0;
+          transform: scale(0.9) translateY(-10px);
         }
 
         @keyframes popupAppear {
@@ -324,16 +329,35 @@ export const GrammarPopup: React.FC<GrammarPopupProps> = ({
         @media (max-width: 768px) {
           .grammar-popup-overlay {
             padding: 16px;
-            padding-top: max(120px, env(safe-area-inset-top) + 104px);
-            align-items: flex-start;
+            align-items: center;
+            justify-content: center;
           }
           
           .grammar-popup {
-            max-width: 100%;
-            max-height: calc(100vh - max(140px, env(safe-area-inset-top) + 124px));
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9) translateY(-10px);
+            max-width: calc(100% - 32px);
+            max-height: calc(100vh - 32px);
+            width: 100%;
+            animation: popupAppearMobile 0.2s ease-out forwards;
+          }
+        }
+
+        @keyframes popupAppearMobile {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.9) translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1) translateY(0);
           }
         }
       `}</style>
     </div>
   );
+
+  return createPortal(popupContent, document.body);
 };

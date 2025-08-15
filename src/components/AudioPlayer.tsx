@@ -923,21 +923,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           <div className="time-end">{formatTime(duration)}</div>
         </div>
 
-        {/* Layer 2.5: Speed control */}
-        <div className="mobile-speed-layer">
-          <div className="mobile-speed-selector">
-            {[0.5, 0.6, 0.7, 0.8, 0.9, 1.0].map((speed) => (
-              <button
-                key={speed}
-                onClick={() => handleSpeedChange(speed)}
-                className={`mobile-speed-option ${playbackRate === speed ? 'active' : ''}`}
-                disabled={isLoading}
-              >
-                {speed}x
-              </button>
-            ))}
-          </div>
-        </div>
+
 
         {/* Layer 3: Transport controls */}
         <div className="transport-layer">
@@ -984,23 +970,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           </button>
         </div>
 
-        {/* Mobile Speed Menu */}
-        {showSpeedMenu && (
-          <div className="mobile-speed-menu">
-            <div className="mobile-speed-menu-grid">
-              {[0.5, 0.6, 0.7, 0.8, 0.9, 1.0].map((speed) => (
-                <button
-                  key={speed}
-                  onClick={() => handleSpeedChange(speed)}
-                  className={`mobile-speed-menu-option ${playbackRate === speed ? 'active' : ''}`}
-                  disabled={isLoading}
-                >
-                  {speed}x
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         {isDemoMode && (
           <div className="mobile-demo-indicator">
@@ -1553,11 +1523,11 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
 
         @media (max-width: 768px) {
           .audio-player { 
-            padding: 16px 14px 40px 14px; 
+            padding: 16px 14px 10px 14px; 
             margin: 2px 0 20px 0; 
             border-radius: 16px;
             width: 100%;
-            height: 250px;
+            height: 200px;
             box-sizing: border-box;
             overflow: visible;
           }

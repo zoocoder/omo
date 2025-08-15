@@ -476,7 +476,7 @@ function App() {
                     <ellipse cx="34.5" cy="40" rx="1.6" ry="2.2" fill="#D98292"/>
 
                     {/* Gentle smile */}
-                    <path d="M26 46 q 6 4 12 0" stroke="#E6A5B0" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+                    <path d="M26 46 q 6 4 12 0" stroke="#E6A6B0" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
                   </g>
 
                   {/* Musical note on head with subtle sway */}
@@ -679,7 +679,6 @@ function App() {
           width: 100%;
           height: 100vh;
           max-width: 100vw;
-          overflow-x: hidden;
           overscroll-behavior: none;
           touch-action: pan-y;
           margin: 0;
@@ -702,7 +701,6 @@ function App() {
           html, body, #root {
             position: relative;
             height: 100vh;
-            overflow-x: hidden;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
           }
@@ -729,7 +727,6 @@ function App() {
           -moz-osx-font-smoothing: grayscale;
           color: #ffffff;
           overscroll-behavior: none;
-          overflow-x: hidden;
           max-width: 100vw;
           width: 100%;
           touch-action: pan-y;
@@ -738,7 +735,6 @@ function App() {
         @media (max-width: 768px) {
           .app {
             min-height: 100vh;
-            overflow-x: hidden;
             position: relative;
             /* Prevent viewport shifting when keyboard opens */
             height: 100vh;
@@ -970,20 +966,18 @@ function App() {
           box-shadow: none !important;
           padding: 0 !important;
           margin-top: 0 !important;
+          display: block;
+          line-height: 0;
+          isolation: isolate;
+          contain: layout style paint;
+          will-change: transform;
         }
 
-        .pig-mascot::before {
-          content: '';
-          position: absolute;
-          top: -10px;
-          left: -10px;
-          right: -10px;
-          bottom: -10px;
-          background: radial-gradient(circle, rgba(121, 85, 242, 0.1) 0%, transparent 70%);
-          border-radius: 50%;
-          animation: glowPulse 3s ease-in-out infinite;
-          z-index: -1;
-        }
+
+
+
+
+
 
         @keyframes musicBob {
           0%, 100% { transform: translateY(0) rotate(-1deg); }
@@ -1159,7 +1153,11 @@ function App() {
           }
           .app-name { font-size: 28px; }
           .app-subtitle { display: none; }
-          .pig-mascot { width: 45px; height: 63px; }
+          .pig-mascot { 
+            width: 45px; 
+            height: 63px; 
+            margin-top: 8px !important;
+          }
           .app-branding { transform: translateX(0) !important; }
           .brand-title { transform: translateX(0) !important; }
           .player-controls { grid-template-columns: 1fr; gap: 6px; touch-action: pan-y; margin-bottom: 2px; }
