@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
+import { createPortal } from 'react-dom';
 import { LoopState } from '../types/lyrics';
 
 interface AudioPlayerProps {
@@ -55,8 +56,10 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   
   // Loop state
   const [loopRegion, setLoopRegion] = useState<{
@@ -165,7 +168,9 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
       audioRef.current.currentTime = 0;
       setCurrentTime(0);
       onTimeUpdate(0);
-      console.log('AudioPlayer: After metadata reset, current time:', audioRef.current.currentTime);
+      // Apply current playback rate to new song
+      audioRef.current.playbackRate = playbackRate;
+      console.log('AudioPlayer: After metadata reset, current time:', audioRef.current.currentTime, 'playback rate:', audioRef.current.playbackRate);
       setIsLoading(false);
       onLoadedData();
 
@@ -189,7 +194,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
         }
       }
     }
-  }, [onDurationChange, onLoadedData, onTimeUpdate]);
+  }, [onDurationChange, onLoadedData, onTimeUpdate, playbackRate]);
 
   // Handle audio errors
   const handleError = useCallback(() => {
@@ -348,6 +353,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
       audioRef.current.src = absoluteUrl;
       lastLoadedUrlRef.current = absoluteUrl;
       audioRef.current.currentTime = 0;
+      audioRef.current.playbackRate = playbackRate; // Apply current speed setting
       await resumeAudioContext();
       await audioRef.current.play();
       startAudioUpdateTimer();
@@ -357,7 +363,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
     } catch (error) {
       setIsLoading(false);
     }
-  }, [isDemoMode, onTimeUpdate, resumeAudioContext, startAudioUpdateTimer, onPlayStateChange, updateMediaSessionPlaybackState]);
+  }, [isDemoMode, onTimeUpdate, resumeAudioContext, startAudioUpdateTimer, onPlayStateChange, updateMediaSessionPlaybackState, playbackRate]);
 
   // MediaSession API for lock screen controls
   const updateMediaSession = useCallback(() => {
@@ -546,12 +552,91 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
 
   // Handle volume change
   const handleVolumeChange = useCallback((newVolume: number) => {
-    const clampedVolume = Math.max(0, Math.min(1, newVolume));
-    setVolume(clampedVolume);
+    setVolume(newVolume);
     if (audioRef.current) {
-      audioRef.current.volume = clampedVolume;
+      audioRef.current.volume = newVolume;
     }
   }, []);
+
+  // Handle speed change
+  const handleSpeedChange = useCallback((newSpeed: number) => {
+    setPlaybackRate(newSpeed);
+    if (audioRef.current && !isDemoMode) {
+      audioRef.current.playbackRate = newSpeed;
+    }
+    setShowSpeedMenu(false);
+  }, [isDemoMode]);
+
+  // Speed menu position calculation
+  const [speedMenuPosition, setSpeedMenuPosition] = useState({ top: 0, left: 0 });
+  const speedButtonRef = useRef<HTMLButtonElement>(null);
+
+  const updateSpeedMenuPosition = useCallback(() => {
+    if (speedButtonRef.current) {
+      const rect = speedButtonRef.current.getBoundingClientRect();
+      setSpeedMenuPosition({
+        top: rect.bottom + 8,
+        left: rect.left + rect.width / 2
+      });
+    }
+  }, []);
+
+  // Update position when menu opens
+  useEffect(() => {
+    if (showSpeedMenu) {
+      updateSpeedMenuPosition();
+      window.addEventListener('scroll', updateSpeedMenuPosition);
+      window.addEventListener('resize', updateSpeedMenuPosition);
+      return () => {
+        window.removeEventListener('scroll', updateSpeedMenuPosition);
+        window.removeEventListener('resize', updateSpeedMenuPosition);
+      };
+    }
+  }, [showSpeedMenu, updateSpeedMenuPosition]);
+
+  // Close speed menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.speed-container') && 
+          !target.closest('.speed-menu-portal')) {
+        setShowSpeedMenu(false);
+      }
+    };
+
+    if (showSpeedMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showSpeedMenu]);
+
+  // Apply playback rate when audio element is ready
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = playbackRate;
+    }
+  }, [playbackRate, audioUrl]);
+
+  // Ensure playback rate is applied when metadata loads
+  useEffect(() => {
+    const applyPlaybackRate = () => {
+      if (audioRef.current && !isDemoMode) {
+        audioRef.current.playbackRate = playbackRate;
+      }
+    };
+
+    if (audioRef.current) {
+      audioRef.current.addEventListener('loadedmetadata', applyPlaybackRate);
+      audioRef.current.addEventListener('canplay', applyPlaybackRate);
+      
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.removeEventListener('loadedmetadata', applyPlaybackRate);
+          audioRef.current.removeEventListener('canplay', applyPlaybackRate);
+        }
+      };
+    }
+  }, [playbackRate, isDemoMode]);
 
   // Format time for display
 
@@ -760,6 +845,22 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           <div className="time-end">{formatTime(duration)}</div>
         </div>
 
+        {/* Layer 2.5: Speed control */}
+        <div className="mobile-speed-layer">
+          <div className="mobile-speed-selector">
+            {[0.5, 0.6, 0.7, 0.8, 0.9, 1.0].map((speed) => (
+              <button
+                key={speed}
+                onClick={() => handleSpeedChange(speed)}
+                className={`mobile-speed-option ${playbackRate === speed ? 'active' : ''}`}
+                disabled={isLoading}
+              >
+                {speed}x
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Layer 3: Transport controls */}
         <div className="transport-layer">
           <button
@@ -805,9 +906,27 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           </button>
         </div>
 
+        {/* Mobile Speed Menu */}
+        {showSpeedMenu && (
+          <div className="mobile-speed-menu">
+            <div className="mobile-speed-menu-grid">
+              {[0.5, 0.6, 0.7, 0.8, 0.9, 1.0].map((speed) => (
+                <button
+                  key={speed}
+                  onClick={() => handleSpeedChange(speed)}
+                  className={`mobile-speed-menu-option ${playbackRate === speed ? 'active' : ''}`}
+                  disabled={isLoading}
+                >
+                  {speed}x
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {isDemoMode && (
           <div className="mobile-demo-indicator">
-            🎵 Demo Mode - Visual lyrics sync (no audio)
+            🎵 Demo Mode - Visual lyrics sync (no audio) • Speed: {playbackRate}x
           </div>
         )}
       </div>
@@ -832,7 +951,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
         )}
         {isDemoMode && (
           <div className="demo-indicator">
-            🎵 Demo Mode - Visual lyrics sync (no audio)
+            🎵 Demo Mode - Visual lyrics sync (no audio) • Speed: {playbackRate}x
           </div>
         )}
         
@@ -928,7 +1047,60 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             className="volume-bar"
           />
         </div>
+
+        <div className="speed-container">
+          <button
+            ref={speedButtonRef}
+            onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+            className="speed-button"
+            aria-label="Playback speed"
+            title={`Speed: ${playbackRate}x`}
+          >
+            <span className="speed-text">{playbackRate}x</span>
+          </button>
+        </div>
       </div>
+
+      {/* Speed menu portal - rendered at document body level */}
+      {showSpeedMenu && createPortal(
+        <>
+          <div 
+            className="speed-menu-backdrop"
+            onClick={() => setShowSpeedMenu(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999998
+            }}
+          />
+          <div 
+            className="speed-menu-portal"
+            style={{
+              position: 'fixed',
+              top: speedMenuPosition.top,
+              left: speedMenuPosition.left,
+              transform: 'translateX(-50%)',
+              zIndex: 999999
+            }}
+          >
+            <div className="speed-menu-content">
+              {[0.5, 0.6, 0.7, 0.8, 0.9, 1.0].map((speed) => (
+                <button
+                  key={speed}
+                  onClick={() => handleSpeedChange(speed)}
+                  className={`speed-option ${playbackRate === speed ? 'active' : ''}`}
+                >
+                  {speed}x
+                </button>
+              ))}
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
 
       <style jsx>{`
         .audio-player {
@@ -945,6 +1117,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           align-items: center;
           gap: 10px;
           flex-wrap: wrap;
+          overflow: visible;
         }
 
         .cover-art {
@@ -1154,15 +1327,161 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
           border: none;
         }
 
+        .speed-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          height: 100%;
+          overflow: visible;
+        }
+
+        .speed-button {
+          background: #ffffff;
+          border: 1px solid #3e3e3e;
+          border-radius: 18px;
+          width: 48px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+          color: #000000;
+          font-weight: bold;
+          position: relative;
+        }
+
+        .speed-button:hover:not(:disabled) {
+          background: #f0f0f0;
+          border-color: #4e4e4e;
+          transform: scale(1.05);
+        }
+
+        .speed-button:disabled {
+          background: #535353;
+          cursor: not-allowed;
+          color: #b3b3b3;
+        }
+
+        .speed-text {
+          font-size: 12px;
+          color: #000000;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        .speed-menu-backdrop {
+          position: fixed;
+          z-index: 999998;
+          background: transparent;
+          cursor: default;
+        }
+
+        .speed-menu-portal {
+          position: fixed;
+          z-index: 999999;
+        }
+
+        .speed-menu-content {
+          background: #2a2a2a;
+          border: 1px solid #3e3e3e;
+          border-radius: 8px;
+          padding: 8px 0;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          min-width: 80px;
+        }
+
+        .speed-option {
+          background: transparent;
+          border: none;
+          padding: 8px 16px;
+          text-align: center;
+          color: #ffffff;
+          font-size: 14px;
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+
+        .speed-option:hover:not(:disabled) {
+          background: #3e3e3e;
+        }
+
+        .speed-option:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          color: #b3b3b3;
+        }
+
+        .speed-option.active {
+          background: #1db954;
+          color: #000;
+          font-weight: bold;
+        }
+
+        /* Mobile Speed Menu Styles */
+        .mobile-speed-menu {
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #2a2a2a;
+          border: 1px solid #3e3e3e;
+          border-radius: 8px;
+          padding: 8px;
+          margin-top: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          z-index: 99999;
+          width: 180px;
+        }
+
+        .mobile-speed-menu-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+          padding: 0;
+        }
+
+        .mobile-speed-menu-option {
+          background: transparent;
+          border: none;
+          padding: 6px 8px;
+          text-align: center;
+          color: #ffffff;
+          font-size: 11px;
+          cursor: pointer;
+          transition: background 0.15s ease;
+          border-radius: 4px;
+        }
+
+        .mobile-speed-menu-option:hover:not(:disabled):not(.active) {
+          background: #3e3e3e;
+        }
+
+        .mobile-speed-menu-option:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          color: #b3b3b3;
+        }
+
+        .mobile-speed-menu-option.active {
+          background: #1db954 !important;
+          color: #000 !important;
+          font-weight: bold;
+        }
+
         @media (max-width: 768px) {
           .audio-player { 
-            padding: 16px 14px 14px 14px; 
-            margin: 2px 0; 
+            padding: 16px 14px 40px 14px; 
+            margin: 2px 0 20px 0; 
             border-radius: 16px;
             width: 100%;
-            height: 240px;
+            height: 250px;
             box-sizing: border-box;
-            overflow: hidden;
+            overflow: visible;
           }
           
           /* Hide desktop layout on mobile */
@@ -1267,14 +1586,62 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           }
           
+                     /* Layer 2.5: Speed control */
+           .mobile-speed-layer {
+             display: flex;
+             justify-content: center;
+             margin-top: 8px;
+             padding: 0 8px;
+           }
+
+          .mobile-speed-selector {
+            display: flex;
+            gap: 8px;
+            background: #2a2a2a;
+            border: 1px solid #3e3e3e;
+            border-radius: 8px;
+            padding: 4px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          }
+
+          .mobile-speed-option {
+            background: transparent;
+            border: none;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: #b3b3b3;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-radius: 6px;
+          }
+
+          .mobile-speed-option:hover:not(:disabled):not(.active) {
+            background: #3e3e3e;
+            color: #ffffff;
+          }
+
+          .mobile-speed-option:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            color: #b3b3b3;
+          }
+
+          .mobile-speed-option.active {
+            background: #1db954 !important;
+            color: #000 !important;
+            font-weight: bold;
+          }
+
           /* Layer 3: Transport controls */
           .transport-layer {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 36px;
-            height: 80px;
+            height: 90px;
             flex-shrink: 0;
+            position: relative;
+            overflow: visible;
           }
           
           .mobile-transport-btn {
@@ -1328,8 +1695,8 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             border: none;
             color: #000000;
             cursor: pointer;
-            width: 64px;
-            height: 64px;
+            width: 56px;
+            height: 56px;
             display: flex;
             align-items: center;
             justify-content: center;
