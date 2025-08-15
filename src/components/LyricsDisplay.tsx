@@ -377,7 +377,7 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
         .lyrics-display {
           background: #1a1a1a;
           border-radius: 12px;
-          padding: 24px;
+          padding: 16px 24px 24px 24px;
           margin: 12px 0;
           max-height: calc(100vh - 280px);
           overflow-y: auto;
@@ -423,8 +423,8 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
           gap: 20px;
-          margin-bottom: 24px;
-          padding: 12px 0;
+          margin-bottom: 16px;
+          padding: 8px 0;
           border-bottom: 1px solid #404040;
         }
 
