@@ -522,7 +522,7 @@ function App() {
         {/* Mobile playlist toggle button - fixed overlay */}
         <button 
           onClick={() => setIsPlaylistVisible(!isPlaylistVisible)}
-          className="mobile-playlist-toggle"
+          className={`mobile-playlist-toggle ${isChatVisible ? 'hidden' : ''}`}
           aria-label={isPlaylistVisible ? "Close playlist" : "Open playlist"}
           onTouchStart={(e) => {
             const touch = e.touches[0];
@@ -957,10 +957,14 @@ function App() {
           top: 310px;
           left: 0;
           transform: none;
-          z-index: 1100;
+          z-index: 1000;
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
           touch-action: pan-x;
+        }
+
+        .mobile-playlist-toggle.hidden {
+          display: none !important;
         }
 
         .mobile-playlist-toggle:hover {
