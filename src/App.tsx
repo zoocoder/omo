@@ -417,13 +417,7 @@ function App() {
             isBeatDetected={isBeatDetected}
           />
 
-          <button 
-            onClick={() => setIsPlaylistVisible(!isPlaylistVisible)}
-            className="mobile-playlist-toggle"
-            aria-label={isPlaylistVisible ? "Close playlist" : "Open playlist"}
-          >
-            {isPlaylistVisible ? '‹' : '›'}
-          </button>
+
           
           <div className="header-row">
             <div className="header-left">
@@ -518,12 +512,47 @@ function App() {
 
       <div className="app-layout">
         {/* Playlist */}
-        <Playlist
+                <Playlist 
           currentSongId={currentSongId}
           onSongSelect={handleSongSelect}
           isVisible={isPlaylistVisible}
           onToggle={() => setIsPlaylistVisible(!isPlaylistVisible)}
         />
+
+        {/* Mobile playlist toggle button - fixed overlay */}
+        <button 
+          onClick={() => setIsPlaylistVisible(!isPlaylistVisible)}
+          className="mobile-playlist-toggle"
+          aria-label={isPlaylistVisible ? "Close playlist" : "Open playlist"}
+          onTouchStart={(e) => {
+            const touch = e.touches[0];
+            const startX = touch.clientX;
+            const startTime = Date.now();
+            
+            const handleTouchMove = (moveEvent: TouchEvent) => {
+              const currentTouch = moveEvent.touches[0];
+              const deltaX = currentTouch.clientX - startX;
+              const deltaTime = Date.now() - startTime;
+              
+              // If dragged right more than 30px and it's a quick gesture
+              if (deltaX > 30 && deltaTime < 500) {
+                if (!isPlaylistVisible) {
+                  setIsPlaylistVisible(true);
+                }
+              }
+            };
+            
+            const handleTouchEnd = () => {
+              document.removeEventListener('touchmove', handleTouchMove);
+              document.removeEventListener('touchend', handleTouchEnd);
+            };
+            
+            document.addEventListener('touchmove', handleTouchMove);
+            document.addEventListener('touchend', handleTouchEnd);
+          }}
+        >
+          {isPlaylistVisible ? '‹' : '›'}
+        </button>
 
         <main className="app-main">
         {error && (
@@ -914,27 +943,31 @@ function App() {
           background: linear-gradient(135deg, #7955f2, #9a6ff2);
           border: none;
           color: white;
-          font-size: 16px;
-          width: 32px;
+          font-size: 14px;
+          width: 60px;
           height: 32px;
-          border-radius: 6px;
+          border-radius: 0 16px 16px 0;
           cursor: pointer;
-          display: flex;
+          display: none;
           align-items: center;
           justify-content: center;
           transition: all 0.3s ease;
-          box-shadow: 0 2px 8px rgba(121, 85, 242, 0.3);
-          position: absolute;
-          top: 50%;
-          left: 12px;
-          transform: translateY(-50%);
-          z-index: 10;
+          box-shadow: 2px 0 12px rgba(121, 85, 242, 0.4);
+          position: fixed;
+          top: 310px;
+          left: 0;
+          transform: none;
+          z-index: 1100;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          touch-action: pan-x;
         }
 
         .mobile-playlist-toggle:hover {
           background: linear-gradient(135deg, #8b66f2, #a876f2);
-          transform: translateY(-50%) scale(1.1);
-          box-shadow: 0 4px 12px rgba(121, 85, 242, 0.5);
+          transform: translateX(4px);
+          box-shadow: 4px 0 16px rgba(121, 85, 242, 0.6);
+          width: 64px;
         }
 
         .app-name {
@@ -1124,13 +1157,14 @@ function App() {
             left: 0;
             right: 0;
             width: 100%;
-            padding: max(24px, env(safe-area-inset-top) + 16px) 12px 16px;
+            padding: max(8px, env(safe-area-inset-top) + 2px) 12px 4px;
             background: ${getSimpleGradient()};
             background-size: 300% 300%;
             animation: gradientShift 8s ease infinite;
             z-index: 1000;
             transform: translateZ(0);
             -webkit-transform: translateZ(0);
+            overflow: visible;
           }
 
           .header-row { 
@@ -1153,19 +1187,26 @@ function App() {
             display: none !important;
             grid-column: unset !important;
           }
-          .app-name { font-size: 28px; }
+          .app-name { font-size: 24px; }
           .app-subtitle { display: none; }
           .pig-mascot { 
             width: 45px; 
             height: 63px; 
-            margin-top: 8px !important;
+            margin-top: 3px !important;
           }
-          .app-branding { transform: translateX(0) !important; }
+          .app-branding { 
+            transform: translateX(0) !important; 
+            margin: 0 0 -8px 0 !important;
+            padding: 4px 0 0 0 !important;
+            overflow: visible !important;
+            position: relative;
+            left: -20px;
+          }
           .brand-title { transform: translateX(0) !important; }
           .player-controls { grid-template-columns: 1fr; gap: 6px; touch-action: pan-y; margin-bottom: 2px; }
           .loop-controls-desktop { display: none; }
           .loop-controls-mobile { display: block; margin-top: 8px; }
-          .mobile-playlist-toggle { display: block; }
+          .mobile-playlist-toggle { display: flex; }
         }
         }
 
