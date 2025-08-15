@@ -33,7 +33,7 @@ export const SONGS: SongInfo[] = [
     duration: 276000
   },
   {
-    id: 'rain-001',
+    id: 'motohiro-hata-001',
     title: 'Rain',
     titleRomaji: 'Rain',
     titleEnglish: 'Rain',
