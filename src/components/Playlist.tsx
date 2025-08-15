@@ -20,9 +20,50 @@ export const Playlist: React.FC<PlaylistProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  // Touch/swipe handling for mobile
+  const touchStartX = React.useRef<number>(0);
+  const touchStartY = React.useRef<number>(0);
+  const isSwiping = React.useRef<boolean>(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!isVisible) return;
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    isSwiping.current = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isVisible) return;
+    const deltaX = e.touches[0].clientX - touchStartX.current;
+    const deltaY = e.touches[0].clientY - touchStartY.current;
+    
+    // If horizontal swipe is more significant than vertical, consider it a swipe
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 20) {
+      isSwiping.current = true;
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isVisible || !isSwiping.current) return;
+    
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    
+    // If swiped left by at least 100px, close the playlist
+    if (deltaX < -100) {
+      onToggle();
+    }
+    
+    isSwiping.current = false;
+  };
+
   return (
     <>
-      <div className={`playlist-sidebar ${isVisible ? 'visible' : ''}`}>
+      <div 
+        className={`playlist-sidebar ${isVisible ? 'visible' : ''}`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {isVisible && (
           <>
             <div className="playlist-header">
@@ -238,8 +279,8 @@ export const Playlist: React.FC<PlaylistProps> = ({
             top: max(90px, env(safe-area-inset-top) + 50px);
             left: 0;
             height: calc(100vh - max(90px, env(safe-area-inset-top) + 50px) - env(safe-area-inset-bottom));
-            width: 85vw;
-            max-width: 360px;
+            width: 75vw;
+            max-width: 320px;
             transform: translateX(${isVisible ? '0' : '-100%'});
             transition: transform 0.3s ease;
             box-shadow: 8px 0 24px rgba(0,0,0,0.5);
