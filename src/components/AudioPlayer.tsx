@@ -1284,6 +1284,12 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             color: #1db954;
             transform: scale(1.1);
           }
+
+          .mobile-transport-btn:focus {
+            color: #ffffff;
+            outline: none;
+            transform: none;
+          }
           
           .mobile-transport-btn:disabled {
             opacity: 0.5;
