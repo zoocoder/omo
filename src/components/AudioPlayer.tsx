@@ -1273,7 +1273,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             align-items: center;
             justify-content: center;
             gap: 40px;
-            height: 64px;
+            height: 80px;
             flex-shrink: 0;
           }
           
@@ -1282,8 +1282,8 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
             border: none;
             color: #ffffff;
             cursor: pointer;
-            width: 60px;
-            height: 60px;
+            width: 72px;
+            height: 72px;
             display: flex;
             align-items: center;
             justify-content: center;
