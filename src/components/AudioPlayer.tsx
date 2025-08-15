@@ -61,6 +61,8 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   
+
+  
   // Loop state
   const [loopRegion, setLoopRegion] = useState<{
     startTime: number;
@@ -157,6 +159,8 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
     }
   }, []);
 
+
+
   // Handle duration change
   const handleLoadedMetadata = useCallback(() => {
     if (audioRef.current) {
@@ -206,6 +210,14 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
     onError(errorMessage);
     setIsLoading(false);
   }, [onError, isDemoMode]);
+
+  // Handle when audio can start playing
+  const handleCanPlay = useCallback(() => {
+    if (audioRef.current && !isDemoMode) {
+      // Ensure playback rate is applied when audio is ready
+      audioRef.current.playbackRate = playbackRate;
+    }
+  }, [isDemoMode, playbackRate]);
 
   // Demo mode timer
   const startDemoTimer = useCallback(() => {
@@ -558,11 +570,33 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
     }
   }, []);
 
-  // Handle speed change
+  // Handle speed change with audio quality optimizations
   const handleSpeedChange = useCallback((newSpeed: number) => {
     setPlaybackRate(newSpeed);
     if (audioRef.current && !isDemoMode) {
+      // Apply playback rate
       audioRef.current.playbackRate = newSpeed;
+      
+      // For slow speeds, ensure audio is properly buffered
+      if (newSpeed < 0.8) {
+        // Force buffer reload to reduce artifacts at slow speeds
+        const currentTime = audioRef.current.currentTime;
+        const wasPlaying = !audioRef.current.paused;
+        
+        // Brief pause and resume to refresh buffer
+        audioRef.current.pause();
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.currentTime = currentTime;
+            audioRef.current.playbackRate = newSpeed;
+            if (wasPlaying) {
+              audioRef.current.play().catch(() => {
+                // Ignore play errors
+              });
+            }
+          }
+        }, 50);
+      }
     }
     setShowSpeedMenu(false);
   }, [isDemoMode]);
@@ -707,7 +741,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
     };
   }, [isPlaying, resumeAudioContext]);
 
-  // Cleanup timers on unmount
+  // Cleanup timers and audio processing on unmount
   useEffect(() => {
     return () => {
       if (demoTimerRef.current) {
@@ -716,6 +750,7 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
       if (audioUpdateTimerRef.current) {
         clearInterval(audioUpdateTimerRef.current);
       }
+
     };
   }, []);
 
@@ -793,8 +828,14 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
         <audio
           ref={audioRef}
           src={audioUrl}
-          preload="metadata"
-          crossOrigin={audioUrl?.includes('://') && !audioUrl.includes('localhost') ? "anonymous" : undefined}
+          preload="auto"
+          crossOrigin="anonymous"
+          playsInline
+          onLoadedMetadata={handleLoadedMetadata}
+          onTimeUpdate={handleTimeUpdate}
+          onError={handleError}
+          onCanPlay={handleCanPlay}
+          onEnded={handleEnded}
         />
       )}
       
