@@ -482,7 +482,7 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
         @media (max-width: 768px) {
           .lyrics-display {
             padding: 14px;
-            margin: 4px 0 8px 0;
+            margin: 0px 0 8px 0;
             border-radius: 16px;
             max-height: calc(100vh - 240px);
           }
