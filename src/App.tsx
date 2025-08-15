@@ -27,7 +27,7 @@ function App() {
 
   // Check if device is mobile web (not native app)
   const isMobileWeb = useCallback(() => {
-    return window.innerWidth <= 768 && 'ontouchstart' in window && !window.navigator.userAgent.includes('Mobile/');
+    return window.innerWidth <= 768 && 'ontouchstart' in window;
   }, []);
 
   // Loop state management
