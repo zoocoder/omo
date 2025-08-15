@@ -41,7 +41,7 @@ export const LyricsLineComponent: React.FC<LyricsLineProps> = ({
     // Store the initial position for the popup
     longPressStartPos.current = { x: e.clientX, y: e.clientY };
     
-    // Call existing drag handler
+    // Call existing drag handler (only if provided)
     if (onPointerDownLine) {
       onPointerDownLine(index, isSelected);
     }
@@ -66,7 +66,7 @@ export const LyricsLineComponent: React.FC<LyricsLineProps> = ({
   }, []);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    // Call existing drag handler
+    // Call existing drag handler (only if provided)
     if (onPointerEnterLine) {
       onPointerEnterLine(index);
     }

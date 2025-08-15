@@ -35,6 +35,11 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
     isPlaying,
   });
 
+  // Check if device is mobile web (not native app)
+  const isMobileWeb = useCallback(() => {
+    return window.innerWidth <= 768 && 'ontouchstart' in window && !window.navigator.userAgent.includes('Mobile/');
+  }, []);
+
   // Pointer-based drag selection state (touch + mouse unified)
   const isDraggingRef = useRef(false);
   const dragAnchorIndexRef = useRef<number | null>(null);
@@ -86,7 +91,7 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
 
   // Drag selection handlers 
   const handlePointerDownLine = useCallback((index: number) => {
-    if (!onLineSelect) return;
+    if (!onLineSelect || isMobileWeb()) return; // Skip drag functionality on mobile web
     
     // Record start time and anchor, but don't start selecting yet
     dragStartTimeRef.current = Date.now();
@@ -103,10 +108,10 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
         }
       });
     }
-  }, [onLineSelect, lyricsData, isLyricSelected]);
+  }, [onLineSelect, lyricsData, isLyricSelected, isMobileWeb]);
 
   const handlePointerEnterLine = useCallback((index: number) => {
-    if (!onLineSelect) return;
+    if (!onLineSelect || isMobileWeb()) return; // Skip drag functionality on mobile web
     const anchor = dragAnchorIndexRef.current;
     if (anchor === null || anchor === index) return;
     
@@ -137,7 +142,7 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
         onLineSelect(i, true);
       }
     }
-  }, [onLineSelect, isLyricSelected, lyricsData]);
+  }, [onLineSelect, isLyricSelected, lyricsData, isMobileWeb]);
 
   // Handle long press for grammar explanation
   const handleLongPress = useCallback(async (line: LyricLine) => {
@@ -355,8 +360,8 @@ export const LyricsDisplay: React.FC<LyricsDisplayProps> = ({
               onLineClick={onSeek}
               isSelected={isLyricSelected ? isLyricSelected(index) : false}
               onLineSelect={onLineSelect}
-              onPointerDownLine={handlePointerDownLine}
-              onPointerEnterLine={handlePointerEnterLine}
+              onPointerDownLine={isMobileWeb() ? undefined : handlePointerDownLine}
+              onPointerEnterLine={isMobileWeb() ? undefined : handlePointerEnterLine}
               onLongPress={handleLongPress}
               isInLoopRange={isLineInLoopRange(line)}
               loopMode={loopState?.mode || null}
