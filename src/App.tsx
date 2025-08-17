@@ -76,6 +76,9 @@ function App() {
     currentIteration: number;
   } | null>(null);
 
+  // Reset trigger for loop controls sliders
+  const [loopControlsResetTrigger, setLoopControlsResetTrigger] = useState(0);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const appEl = document.querySelector('.app') as HTMLElement | null;
@@ -125,6 +128,30 @@ function App() {
   useEffect(() => {
     songRef.current = song;
   }, [song]);
+
+  // Helper function to clear all loop states when switching songs
+  const clearAllLoopStates = useCallback(() => {
+    // Clear global loop state
+    if (loopState?.isActive) {
+      stopLoop();
+    }
+    
+    // Clear individual lyric loop state
+    if (individualLyricLoop?.isActive) {
+      setIndividualLyricLoop(null);
+    }
+    
+    // Clear audio player loop region
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.clearLoop();
+    }
+    
+    // Reset loop state completely to clear any selections
+    resetLoop();
+    
+    // Reset loop controls sliders
+    setLoopControlsResetTrigger(prev => prev + 1);
+  }, [loopState, individualLyricLoop, stopLoop, resetLoop]);
 
   // Load song when currentSongId changes
   useEffect(() => {
@@ -340,27 +367,6 @@ function App() {
   const closeGrammarPopup = useCallback(() => {
     setGrammarPopup(null);
   }, []);
-
-  // Helper function to clear all loop states when switching songs
-  const clearAllLoopStates = useCallback(() => {
-    // Clear global loop state
-    if (loopState?.isActive) {
-      stopLoop();
-    }
-    
-    // Clear individual lyric loop state
-    if (individualLyricLoop?.isActive) {
-      setIndividualLyricLoop(null);
-    }
-    
-    // Clear audio player loop region
-    if (audioPlayerRef.current) {
-      audioPlayerRef.current.clearLoop();
-    }
-    
-    // Reset loop state completely to clear any selections
-    resetLoop();
-  }, [loopState, individualLyricLoop, stopLoop, resetLoop]);
 
 
 
@@ -796,6 +802,7 @@ function App() {
               hasLyricsSelected={loopState.selectedLyricIndices.length > 0}
               calculatedTimeRange={getCalculatedTimeRange((song || previousSong)?.lyricsData || null)}
               isMobileWeb={isMobileWeb()}
+              resetTrigger={loopControlsResetTrigger}
             />
             </div>
           </>
@@ -831,6 +838,7 @@ function App() {
               hasLyricsSelected={loopState.selectedLyricIndices.length > 0}
               calculatedTimeRange={getCalculatedTimeRange((song || previousSong)?.lyricsData || null)}
               isMobileWeb={isMobileWeb()}
+              resetTrigger={loopControlsResetTrigger}
             />
           </div>
         )}

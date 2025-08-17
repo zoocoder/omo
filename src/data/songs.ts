@@ -47,6 +47,14 @@ export const SONGS: SongInfo[] = [
     titleEnglish: 'Bling-Bang-Bang-Born',
     artist: 'Creepy Nuts',
     duration: 168000
+  },
+  {
+    id: 'keisuke-kuwata-001',
+    title: '波乗りジョニー',
+    titleRomaji: 'Naminori Johnny',
+    titleEnglish: 'Surfing Johnny',
+    artist: 'Keisuke Kuwata',
+    duration: 268000
   }
 ];
 

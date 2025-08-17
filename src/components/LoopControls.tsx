@@ -12,6 +12,7 @@ interface LoopControlsProps {
   hasLyricsSelected: boolean;
   calculatedTimeRange: { startTime: number; endTime: number };
   isMobileWeb?: boolean;
+  resetTrigger?: number;
 }
 
 export const LoopControls: React.FC<LoopControlsProps> = ({
@@ -25,6 +26,7 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
   hasLyricsSelected,
   calculatedTimeRange,
   isMobileWeb = false,
+  resetTrigger,
 }) => {
   const [timeLoopStart, setTimeLoopStart] = useState(0);
   const [timeLoopEnd, setTimeLoopEnd] = useState(Math.min(30000, duration)); // Default 30 seconds
@@ -49,6 +51,16 @@ export const LoopControls: React.FC<LoopControlsProps> = ({
       setTimeLoopEnd(Math.min(30000, duration));
     }
   }, [duration, timeLoopEnd]);
+
+  // Reset slider positions when resetTrigger changes (e.g., when switching songs)
+  useEffect(() => {
+    if (resetTrigger !== undefined) {
+      setTimeLoopStart(0);
+      setTimeLoopEnd(Math.min(30000, duration));
+      setTimeRepeatCount(3);
+      setLyricsRepeatCount(3);
+    }
+  }, [resetTrigger, duration]);
 
   const formatTime = (timeInMs: number): string => {
     const totalSeconds = Math.floor(timeInMs / 1000);

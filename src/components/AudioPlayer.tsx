@@ -98,92 +98,39 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
         // Continue loop - increment iteration after checking
         const newIteration = loopRegion.currentIteration + 1;
         
-        // Only apply 1-second pause for individual lyric loops (not selected-lyrics loops)
-        if (loopRegion.type === 'lyric') {
-          // Pause playback during the 1-second delay for lyric loops
-          if (audioRef.current && !isDemoMode) {
-            audioRef.current.pause();
-            // Update internal state to reflect pause
-            setIsPlaying(false);
-            updateMediaSessionPlaybackState();
-            onPlayStateChange?.(false);
+        // All loop types now restart immediately without pause
+        setLoopRegion(prev => {
+          if (!prev) {
+            console.error('Loop region was null when trying to update iteration');
+            return null;
           }
+          return { ...prev, currentIteration: newIteration };
+        });
+        
+        // Immediately seek to start and continue playing
+        if (isDemoMode) {
+          setCurrentTime(loopRegion.startTime);
+          onTimeUpdate(loopRegion.startTime);
+        } else if (audioRef.current) {
+          audioRef.current.currentTime = loopRegion.startTime / 1000;
+          const newTime = loopRegion.startTime;
+          setCurrentTime(newTime);
+          onTimeUpdate(newTime);
           
-          setLoopRegion(prev => {
-            if (!prev) {
-              console.error('Loop region was null when trying to update iteration');
-              return null;
-            }
-            return { ...prev, currentIteration: newIteration };
-          });
-          
-          // Add 1 second delay before restarting the loop
-          setTimeout(() => {
-            // Check if loop is still active before resuming
-            if (!loopRegion || !loopRegion.isActive) {
-              return;
-            }
-            
-            if (isDemoMode) {
-              setCurrentTime(loopRegion.startTime);
-              onTimeUpdate(loopRegion.startTime);
-            } else if (audioRef.current) {
-              audioRef.current.currentTime = loopRegion.startTime / 1000;
-              // Immediately update the time to ensure continuity
-              const newTime = loopRegion.startTime;
-              setCurrentTime(newTime);
-              onTimeUpdate(newTime);
-              
-              // Resume playback after the delay
-              audioRef.current.play().then(() => {
-                // Update internal state to reflect play
-                setIsPlaying(true);
-                updateMediaSessionPlaybackState();
-                onPlayStateChange?.(true);
-              }).catch((error) => {
-                console.error('Error resuming loop playback:', error);
-              });
-            }
-            
-            if (onLoopIteration) {
-              onLoopIteration();
-            }
-          }, 1000); // 1 second delay
-        } else {
-          // For time-based loops and selected-lyrics loops, immediately restart without pause
-          setLoopRegion(prev => {
-            if (!prev) {
-              console.error('Loop region was null when trying to update iteration');
-              return null;
-            }
-            return { ...prev, currentIteration: newIteration };
-          });
-          
-          // Immediately seek to start and continue playing
-          if (isDemoMode) {
-            setCurrentTime(loopRegion.startTime);
-            onTimeUpdate(loopRegion.startTime);
-          } else if (audioRef.current) {
-            audioRef.current.currentTime = loopRegion.startTime / 1000;
-            const newTime = loopRegion.startTime;
-            setCurrentTime(newTime);
-            onTimeUpdate(newTime);
-            
-            // Continue playing immediately
-            if (!isPlaying) {
-              audioRef.current.play().then(() => {
-                setIsPlaying(true);
-                updateMediaSessionPlaybackState();
-                onPlayStateChange?.(true);
-              }).catch((error) => {
-                console.error('Error continuing loop playback:', error);
-              });
-            }
+          // Continue playing immediately
+          if (!isPlaying) {
+            audioRef.current.play().then(() => {
+              setIsPlaying(true);
+              updateMediaSessionPlaybackState();
+              onPlayStateChange?.(true);
+            }).catch((error) => {
+              console.error('Error continuing loop playback:', error);
+            });
           }
-          
-          if (onLoopIteration) {
-            onLoopIteration();
-          }
+        }
+        
+        if (onLoopIteration) {
+          onLoopIteration();
         }
       } else {
         // Loop complete - stop looping
