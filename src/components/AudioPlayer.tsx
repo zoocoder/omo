@@ -135,10 +135,10 @@ export const AudioPlayer = forwardRef<AudioPlayerRef, AudioPlayerProps>(({
       } else {
         // Loop complete - stop looping
         setLoopRegion(prev => prev ? { ...prev, isActive: false } : null);
-        if (isPlaying) {
-          setIsPlaying(false);
-          updateMediaSessionPlaybackState();
-        }
+        
+        // Continue playing normally after any loop completion
+        // The user can manually pause if they want to stop
+        // No automatic pausing when loops complete
         
         // Notify App component that loop has completed
         if (onLoopComplete) {
